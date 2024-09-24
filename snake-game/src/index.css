@@ -1,4 +1,65 @@
+@font-face {
+  font-family: "Neue Haas Grotesk Display Pro";
+  /* src: url("./fonts/NeueHaasDisplayBlack.ttf"); */
+  /* src: url("./fonts/NeueHaasDisplayLight.ttf"); */
+  src: url("./fonts/NeueHaasDisplayRoman.ttf");
+  /* font-weight: 400; */
+  /* font-weight: normal; */
+  /* font-style: normal; */
+}
+@font-face {
+  font-family: "Parabole";
+  src: url("./fonts/Parabole.ttf");
+  /* font-weight: 400; */
+}
+
+@font-face {
+  font-family: "NeueHaasDisplayMediu";
+  src: url("./fonts/NeueHaasDisplayMediu.ttf");
+  /* font-weight: 400; */
+}
+
+@font-face {
+  font-family: "NeueHaasDisplayLight";
+  src: url("./fonts/NeueHaasDisplayLight.ttf");
+  /* font-weight: 400; */
+}
+
+
 body {
+    /* fonts */
+  --font-neue-haas-grotesk-display-pro: "Neue Haas Grotesk Display Pro";
+  --font-parabole: Parabole;
+
+  /* font sizes */
+  /* --font-size-base: 16px;
+  --font-size-sm: 14px;
+  --font-size-xs: 12px; */
+
+  /* Colors */
+  --color-white: #fff;
+  --color-black: #000;
+  --color-sandybrown: #f39b4b;
+  --color-antiquewhite: #fae6d5;
+  --color-gray-100: #31281f;
+  --color-gray-200: rgba(255, 255, 255, 0.1);
+
+  /* Border radiuses */
+  --br-7xs: 6px;
+  --br-5xs: 8px;
+  margin: 0;
+  font-family: 'Parabole', 'NeueHaasDisplayMediu', 'NeueHaasDisplayLight', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+/* body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -10,4 +71,4 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
-}
+} */
