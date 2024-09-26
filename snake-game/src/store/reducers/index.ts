@@ -15,6 +15,7 @@ export interface IGlobalState {
   snake: ISnakeCoord[] | [];
   disallowedDirection: string;
   score: number;
+  maxScore: number;
 }
 
 const globalState: IGlobalState = {
@@ -27,6 +28,7 @@ const globalState: IGlobalState = {
   ],
   disallowedDirection: "",
   score: 0,
+  maxScore:0
 };
 const gameReducer = (state = globalState, action: any) => {
   switch (action.type) {

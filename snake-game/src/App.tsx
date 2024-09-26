@@ -9,6 +9,7 @@ import ScoreCard from "./components/ScoreCard";
 import store from "./store";
 
 import { shortenAddress, useEthers, useLookupAddress } from "@usedapp/core";
+import MaxScoreCard from './components/MaxScoreCard';
 
 const btnCls = css`
 align-items: center;
@@ -116,6 +117,7 @@ const App = () => {
       <ChakraProvider>
         <Container maxW="container.lg" centerContent>
           <Heading as="h1" size="xl">SNAKE GAME</Heading>
+          <MaxScoreCard />
           <ScoreCard />
           <div style={{marginBottom: "12px"}}>
             <WalletButton />
