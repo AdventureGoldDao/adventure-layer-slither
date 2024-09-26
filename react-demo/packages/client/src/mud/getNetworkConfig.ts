@@ -1,6 +1,7 @@
 /*
  * Network specific configuration for the client.
  * By default connect to the anvil test network.
+ *
  */
 
 /*
@@ -18,8 +19,8 @@ import worlds from "contracts/worlds.json";
 
 /*
  * The supported chains.
+ * By default, there are only two chains here:
  */
-
 import { supportedChains } from "./supportedChains";
 
 export async function getNetworkConfig() {
