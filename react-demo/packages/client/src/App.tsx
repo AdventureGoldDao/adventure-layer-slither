@@ -7,9 +7,12 @@ import { useMUD } from "./MUDContext";
 import { singletonEntity } from "@latticexyz/store-sync/recs";
 import CanvasBoard from "./components/CanvasBoard";
 import ScoreCard from "./components/ScoreCard";
-
+import MaxScoreCard from "./components/MaxScoreCard";
 import { shortenAddress, useEthers, useLookupAddress } from "@usedapp/core";
-
+import { useDispatch, useSelector } from "react-redux";
+import {
+  MAX_SCORE
+} from "./store/actions/index";
 const btnCls = css`
 align-items: center;
 border-color: #f39b4b;
@@ -114,11 +117,14 @@ function WalletButton() {
 export const App = () => {
   const {
     components: { Counter },
-    systemCalls: { increment },
+    systemCalls: { increment, setMaxScore },
   } = useMUD();
 
   const counter = useComponentValue(Counter, singletonEntity);
-    console.log("counter:", counter);
+  console.log("counter:", counter);
+  const dispatch = useDispatch();
+  dispatch({type: MAX_SCORE, payload: (counter?.value ?? 0)});
+
   return (
     <>
       <div>
@@ -126,6 +132,7 @@ export const App = () => {
       </div>
       <button
         type="button"
+        style={{ display: "block" }}
         onClick={async (event) => {
           event.preventDefault();
           console.log("new counter value:", await increment());
@@ -133,8 +140,19 @@ export const App = () => {
       >
         Increment
       </button>
+      <button
+        type="button"
+        style={{ display: "block" }}
+        onClick={async (event) => {
+          event.preventDefault();
+          console.log("setMaxScore value:", await setMaxScore(100));
+        }}
+      >
+        setMaxScore
+      </button>
       <Container maxW="container.lg" centerContent>
         <Heading as="h1" size="xl">SNAKE GAME</Heading>
+        <MaxScoreCard />
         <ScoreCard />
         <div style={{marginBottom: "12px"}}>
           <WalletButton />

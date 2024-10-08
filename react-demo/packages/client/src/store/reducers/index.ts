@@ -1,3 +1,4 @@
+
 import {
   DOWN,
   INCREASE_SNAKE,
@@ -9,12 +10,15 @@ import {
   RIGHT,
   SET_DIS_DIRECTION,
   UP,
-} from "../actions";
+  MAX_SCORE,
+} from "../actions/index";
+
 
 export interface IGlobalState {
   snake: ISnakeCoord[] | [];
   disallowedDirection: string;
   score: number;
+  maxScore: number;
 }
 
 const globalState: IGlobalState = {
@@ -27,6 +31,7 @@ const globalState: IGlobalState = {
   ],
   disallowedDirection: "",
   score: 0,
+  maxScore: 0
 };
 const gameReducer = (state = globalState, action: any) => {
   switch (action.type) {
@@ -84,6 +89,9 @@ const gameReducer = (state = globalState, action: any) => {
         ...state,
         score: state.score + 1,
       };
+    case MAX_SCORE:
+      console.log("on MAX_SCORE", action.payload);
+      return { ...state, maxScore: action.payload };
     default:
       return state;
   }

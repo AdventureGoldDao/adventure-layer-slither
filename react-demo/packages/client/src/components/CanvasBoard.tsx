@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useMUD } from "../MUDContext";
+
 import {
   increaseSnake,
   INCREMENT_SCORE,
@@ -12,7 +14,8 @@ import {
   RESET_SCORE,
   scoreUpdates,
   stopGame,
-} from "../store/actions";
+  MAX_SCORE
+} from "../store/actions/index";
 import { IGlobalState } from "../store/reducers";
 import {
   clearBoard,
@@ -144,6 +147,17 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     ) {
       setGameEnded(true);
       dispatch(stopGame());
+      const {
+        systemCalls: { increment, setMaxScore },
+      } = useMUD();
+      const score = useSelector((state: IGlobalState) => state.score);
+      const maxscore = useSelector((state: IGlobalState) => state.maxScore);
+      setMaxScore(score);
+      console.log(`game over curScore:${score},curMaxScore:${maxscore}`);
+      if(score>maxscore){
+        console.log("game over,set a new record!");
+        dispatch({type: MAX_SCORE, payload: (score ?? 0)});
+      }
       window.removeEventListener("keypress", handleKeyEvents);
     } else setGameEnded(false);
   }, [context, pos, snake1, height, width, dispatch, handleKeyEvents]);

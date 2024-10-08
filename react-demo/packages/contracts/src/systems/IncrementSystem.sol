@@ -11,4 +11,11 @@ contract IncrementSystem is System {
     Counter.set(newValue);
     return newValue;
   }
+  function setMaxScore(uint32 newscore) public returns (uint32) {
+    uint32 oldscore = Counter.get();
+    if(newscore>oldscore){
+       Counter.set(newscore);
+    }
+    return Counter.get();
+  }
 }

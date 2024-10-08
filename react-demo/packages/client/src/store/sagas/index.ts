@@ -18,7 +18,7 @@ import {
   setDisDirection,
   STOP_GAME,
   UP,
-} from "../actions";
+} from "../actions/index";
 
 export function* moveSaga(params: {
   type: string;

@@ -44,8 +44,25 @@ export function createSystemCalls(
     await waitForTransaction(tx);
     return getComponentValue(Counter, singletonEntity);
   };
+  const setMaxScore = async (score: number) => {
+    /*
+     * Because IncrementSystem
+     * (https://mud.dev/templates/typescript/contracts#incrementsystemsol)
+     * is in the root namespace, `.setMaxScore` can be called directly
+     * on the World contract.
+     */
+    console.log("call setMaxScore core:", score);
+    const tx = await worldContract.write.app__setMaxScore(score);
+    await waitForTransaction(tx);
+    return getComponentValue(Counter, singletonEntity);
+  };
+  
 
   return {
     increment,
+    setMaxScore
   };
+
+
 }
+
