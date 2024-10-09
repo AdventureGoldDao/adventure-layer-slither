@@ -6,16 +6,17 @@ import { Counter } from "../codegen/index.sol";
 
 contract IncrementSystem is System {
   function increment() public returns (uint32) {
-    uint32 counter = Counter.get();
+    uint32 counter = Counter.getValue(_msgSender());
     uint32 newValue = counter + 1;
-    Counter.set(newValue);
+    Counter.set(_msgSender(), newValue);
     return newValue;
   }
   function setMaxScore(uint32 newscore) public returns (uint32) {
-    uint32 oldscore = Counter.get();
-    if(newscore>oldscore){
-       Counter.set(newscore);
+    uint32 score = Counter.getValue(_msgSender());
+    if(newscore>score){
+      score = newscore;
+      Counter.setValue(_msgSender(), score);
     }
-    return Counter.get();
+    return score;
   }
 }

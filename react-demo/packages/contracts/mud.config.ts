@@ -5,9 +5,10 @@ export default defineWorld({
   tables: {
     Counter: {
       schema: {
+        player: "address",
         value: "uint32",
       },
-      key: [],
+      key: ["player"],
     },
   },
 });

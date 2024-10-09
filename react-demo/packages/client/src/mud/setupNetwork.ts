@@ -11,6 +11,7 @@ import {
   createWalletClient,
   Hex,
   ClientConfig,
+  custom,
   getContract,
 } from "viem";
 import { encodeEntity, syncToRecs } from "@latticexyz/store-sync/recs";
@@ -60,10 +61,10 @@ export async function setupNetwork() {
    * Create a temporary wallet and a viem client for it
    * (see https://viem.sh/docs/clients/wallet.html).
    */
-  const burnerAccount = createBurnerAccount(networkConfig.privateKey as Hex);
+  // const burnerAccount = createBurnerAccount(networkConfig.privateKey as Hex);
   const burnerWalletClient = createWalletClient({
-    ...clientOptions,
-    account: burnerAccount,
+    chain: networkConfig.chain,
+    transport: custom(window.ethereum!),
   })
     .extend(transactionQueue())
     .extend(writeObserver({ onWrite: (write) => write$.next(write) }));
