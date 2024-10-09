@@ -147,20 +147,25 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     ) {
       setGameEnded(true);
       dispatch(stopGame());
-      const {
-        systemCalls: { increment, setMaxScore },
-      } = useMUD();
-      const score = useSelector((state: IGlobalState) => state.score);
-      const maxscore = useSelector((state: IGlobalState) => state.maxScore);
-      setMaxScore(score);
-      console.log(`game over curScore:${score},curMaxScore:${maxscore}`);
-      if(score>maxscore){
-        console.log("game over,set a new record!");
-        dispatch({type: MAX_SCORE, payload: (score ?? 0)});
-      }
+      console.log("stopGame!!");
       window.removeEventListener("keypress", handleKeyEvents);
     } else setGameEnded(false);
   }, [context, pos, snake1, height, width, dispatch, handleKeyEvents]);
+
+  const score = useSelector((state: IGlobalState) => state.score);
+  const maxscore = useSelector((state: IGlobalState) => state.maxScore);
+  const { systemCalls: { setMaxScore } } = useMUD();
+  useEffect(() => {
+    if (gameEnded) {
+      setMaxScore(score); // 注意检查 setMaxScore 是否存在
+      console.log(`game over curScore:${score},curMaxScore:${maxscore}`);
+      if(score > maxscore){
+        console.log("game over,set a new record!");
+        dispatch({type: MAX_SCORE, payload: (score ?? 0)});
+      }
+    }
+  }, [gameEnded, score, maxscore, setMaxScore, dispatch]);
+  
 
   useEffect(() => {
     window.addEventListener("keypress", handleKeyEvents);
