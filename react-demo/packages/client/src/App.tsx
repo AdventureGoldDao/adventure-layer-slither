@@ -145,7 +145,7 @@ export const App = () => {
         style={{ display: "block" }}
         onClick={async (event) => {
           event.preventDefault();
-          console.log("setMaxScore value:", await setMaxScore(counter?.value + 1 ));
+          console.log("setMaxScore value:", await setMaxScore(10));
         }}
       >
         setMaxScore

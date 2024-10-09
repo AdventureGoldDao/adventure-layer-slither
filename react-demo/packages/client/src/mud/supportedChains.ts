@@ -24,7 +24,7 @@ const localNitro: MUDChain = {
     rpcUrls: {
         default: {
             http: ["http://34.228.184.10:8587"],
-            webSocket: ["ws://34.228.184.10:8588"],
+            webSocket: ["http://34.228.184.10:8588"],
         },
     }
 };
