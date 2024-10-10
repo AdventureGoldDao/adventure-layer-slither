@@ -6,21 +6,11 @@ export default defineWorld({
     Counter: {
       schema: {
         player: "bytes32",
-        value: "uint32",
+        curScore: "uint32",
+        maxScore: "uint32",
       },
       key: ["player"],
     },
-    Player: "bool",
-    Position: {
-      schema: {
-        id: "bytes32",
-        x: "int32",
-        y: "int32",
-      },
-      key: ["id"],
-      codegen: {
-        dataStruct: false,
-      },
-    },
   },
 });
+

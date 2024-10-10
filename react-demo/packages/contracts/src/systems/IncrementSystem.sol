@@ -8,18 +8,18 @@ import { addressToEntityKey } from "../addressToEntityKey.sol";
 contract IncrementSystem is System {
   function increment() public returns (uint32) {
     bytes32 player = addressToEntityKey(address(_msgSender()));
-    uint32 counter = Counter.getValue(player);
+    uint32 counter = Counter.getCurScore(player);
     uint32 newValue = counter + 1;
-    Counter.set(player, newValue);
+    Counter.setCurScore(player, newValue);
+    uint32 maxScore = Counter.getMaxScore(player);
+    if(newValue>maxScore){
+      Counter.setMaxScore(player, newValue);
+    }
     return newValue;
   }
-  function setMaxScore(uint32 newscore) public returns (uint32) {
-    bytes32 player = addressToEntityKey(address(_msgSender()));
-    uint32 score = Counter.getValue(player);
-    if(newscore>score){
-      score = newscore;
-      Counter.setValue(player, score);
-    }
-    return score;
+
+  function reStartGame() public {
+      bytes32 player = addressToEntityKey(address(_msgSender()));
+      Counter.setCurScore(player, uint32(0));
   }
 }

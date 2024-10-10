@@ -11,5 +11,5 @@ pragma solidity >=0.8.24;
 interface IIncrementSystem {
   function app__increment() external returns (uint32);
 
-  function app__setMaxScore(uint32 newscore) external returns (uint32);
+  function app__reStartGame() external;
 }

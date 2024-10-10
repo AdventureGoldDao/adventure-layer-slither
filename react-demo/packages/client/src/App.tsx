@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useComponentValue } from "@latticexyz/react";
-import { getComponentValue } from "@latticexyz/recs";
 import { Container, Heading, Button } from "@chakra-ui/react";
 /** @jsxImportSource @emotion/react */
 import { useMUD } from "./MUDContext";
@@ -12,42 +11,19 @@ export const App = () => {
   const {
     network : { playerEntity },
     components: { Counter },
-    systemCalls: { increment, setMaxScore },
+    systemCalls: { reStartGame },
   } = useMUD();
 
   const counter = useComponentValue(Counter, playerEntity);
-  console.log("playerEntity:", playerEntity);
-  console.log("counter:", counter);
-
+  if (counter === undefined) {
+      reStartGame();
+  }
   return (
     <>
-      <div>
-        Counter: <span>{counter?.value ?? "??"}</span>
-      </div>
-      <button
-        type="button"
-        style={{ display: "block" }}
-        onClick={async (event) => {
-          event.preventDefault();
-          console.log("new counter value:", await increment());
-        }}
-      >
-        Increment
-      </button>
-      <button
-        type="button"
-        style={{ display: "block" }}
-        onClick={async (event) => {
-          event.preventDefault();
-          console.log("setMaxScore value:", await setMaxScore(10));
-        }}
-      >
-        setMaxScore
-      </button>
       <Container maxW="container.lg" centerContent>
         <Heading as="h1" size="xl">SNAKE GAME</Heading>
-        <MaxScoreCard />
-        <ScoreCard />
+          <Heading as="h2" size="md" mt={5} mb={0}>Max Score: {counter?.maxScore ?? "0"}</Heading>
+          <Heading as="h2" size="md" mt={5} mb={5}>Current Score: {counter?.curScore ?? "0"}</Heading>
         <CanvasBoard height={600} width={1000} />
       </Container>
     </>

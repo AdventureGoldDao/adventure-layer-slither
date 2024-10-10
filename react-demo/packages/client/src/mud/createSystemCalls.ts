@@ -38,9 +38,8 @@ export function createSystemCalls(
     await waitForTransaction(tx);
     return getComponentValue(Counter, singletonEntity);
   };
-  const setMaxScore = async (score: number) => {
-    console.log("call setMaxScore core:", score);
-    const tx = await worldContract.write.app__setMaxScore([score]);
+  const reStartGame = async () => {
+    const tx = await worldContract.write.app__reStartGame();
     await waitForTransaction(tx);
     return getComponentValue(Counter, singletonEntity);
   };
@@ -48,7 +47,7 @@ export function createSystemCalls(
 
   return {
     increment,
-    setMaxScore
+    reStartGame
   };
 
 

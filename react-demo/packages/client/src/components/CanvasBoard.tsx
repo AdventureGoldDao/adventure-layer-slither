@@ -31,6 +31,15 @@ export interface ICanvasBoard {
   width: number;
 }
 const CanvasBoard = ({ height, width }: ICanvasBoard) => {
+  const {
+    systemCalls: { reStartGame, increment },
+  } = useMUD();
+  const inerData = async () => {
+    console.log("increment score :",await increment())
+  };
+  const reData = async () => {
+    console.log("reStartGame :",await reStartGame())
+  };
   const dispatch = useDispatch();
   const snake1 = useSelector((state: IGlobalState) => state.snake);
   const disallowedDirection = useSelector(
@@ -97,7 +106,8 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     [disallowedDirection, moveSnake]
   );
 
-  const resetBoard = useCallback(() => {
+  const resetBoard = useCallback(async () => {
+    reData()
     window.removeEventListener("keypress", handleKeyEvents);
     dispatch(resetGame());
     dispatch(scoreUpdates(RESET_SCORE));
@@ -134,7 +144,8 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     drawObject(context, [pos], "#676FA3"); //Draws object randomly
 
     //When the object is consumed
-    if (snake1[0].x === pos?.x && snake1[0].y === pos?.y) {
+    if (!isConsumed && snake1[0].x === pos?.x && snake1[0].y === pos?.y) {
+      inerData();
       setIsConsumed(true);
     }
 
@@ -145,19 +156,9 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
       snake1[0].y <= 0 ||
       snake1[0].y >= height
     ) {
+      reData()
       setGameEnded(true);
       dispatch(stopGame());
-      const {
-        systemCalls: { increment, setMaxScore },
-      } = useMUD();
-      const score = useSelector((state: IGlobalState) => state.score);
-      const maxscore = useSelector((state: IGlobalState) => state.maxScore);
-      setMaxScore(score);
-      console.log(`game over curScore:${score},curMaxScore:${maxscore}`);
-      if(score>maxscore){
-        console.log("game over,set a new record!");
-        dispatch({type: MAX_SCORE, payload: (score ?? 0)});
-      }
       window.removeEventListener("keypress", handleKeyEvents);
     } else setGameEnded(false);
   }, [context, pos, snake1, height, width, dispatch, handleKeyEvents]);

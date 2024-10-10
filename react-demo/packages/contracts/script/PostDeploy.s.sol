@@ -21,10 +21,10 @@ contract PostDeploy is Script {
     // ------------------ EXAMPLES ------------------
 
     // Call increment on the world via the registered function selector
-    uint32 newValue = IWorld(worldAddress).app__increment();
-    uint32 newValue2 = IWorld(worldAddress).app__setMaxScore(uint32(0));
-    console.log("Increment via IWorld:", newValue);
-    console.log("setMaxScore via IWorld:", newValue2);
+//    uint32 newValue = IWorld(worldAddress).app__increment();
+//    uint32 newValue2 = IWorld(worldAddress).app__setMaxScore(uint32(0));
+//    console.log("Increment via IWorld:", newValue);
+//    console.log("setMaxScore via IWorld:", newValue2);
 
     vm.stopBroadcast();
   }
