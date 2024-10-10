@@ -11,7 +11,6 @@ import {
   createWalletClient,
   Hex,
   ClientConfig,
-  custom,
   getContract,
 } from "viem";
 import { encodeEntity, syncToRecs } from "@latticexyz/store-sync/recs";
@@ -19,7 +18,7 @@ import { encodeEntity, syncToRecs } from "@latticexyz/store-sync/recs";
 import { getNetworkConfig } from "./getNetworkConfig";
 import { world } from "./world";
 import IWorldAbi from "contracts/out/IWorld.sol/IWorld.abi.json";
-import { transportObserver, ContractWrite } from "@latticexyz/common";
+import { createBurnerAccount, transportObserver, ContractWrite } from "@latticexyz/common";
 import { transactionQueue, writeObserver } from "@latticexyz/common/actions";
 
 import { Subject, share } from "rxjs";
@@ -61,15 +60,10 @@ export async function setupNetwork() {
    * Create a temporary wallet and a viem client for it
    * (see https://viem.sh/docs/clients/wallet.html).
    */
-  const [burnerAccount] = await window.ethereum!.request({ method: 'eth_requestAccounts' })
-  if (burnerAccount.length === 0) {
-    throw new Error("No accounts found");
-  }
-  console.log("burnerAccount", burnerAccount);
+  const burnerAccount = createBurnerAccount(networkConfig.privateKey as Hex);
   const burnerWalletClient = createWalletClient({
-    chain: networkConfig.chain,
-    account: burnerAccount,
-    transport: custom(window.ethereum!)
+    ...clientOptions,
+    account: burnerAccount
   })
     .extend(transactionQueue())
     .extend(writeObserver({ onWrite: (write) => write$.next(write) }));
