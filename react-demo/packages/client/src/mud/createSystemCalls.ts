@@ -31,7 +31,7 @@ export function createSystemCalls(
    *   (https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
    */
   { worldContract, waitForTransaction }: SetupNetworkResult,
-  { Counter }: ClientComponents,
+  { Counter,Position }: ClientComponents,
 ) {
   const increment = async () => {
     const tx = await worldContract.write.app__increment();
@@ -41,11 +41,17 @@ export function createSystemCalls(
   const reStartGame = async () => {
     const tx = await worldContract.write.app__reStartGame();
     await waitForTransaction(tx);
-    return getComponentValue(Counter, singletonEntity);
+    return getComponentValue(Counter, singletonEntity)
   };
-  
+
+  const move = async (direction: number) => {
+    const tx = await worldContract.write.app__move([direction]);
+    await waitForTransaction(tx);
+    return getComponentValue(Position, singletonEntity)
+  };
 
   return {
+    move,
     increment,
     reStartGame
   };

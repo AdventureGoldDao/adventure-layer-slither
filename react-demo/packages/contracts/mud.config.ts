@@ -11,6 +11,15 @@ export default defineWorld({
       },
       key: ["player"],
     },
+    Position: {
+      schema: {
+        player: "bytes32",
+        x: "uint32",
+        y: "uint32",
+        m: "uint32",
+      },
+      key: ["player"]
+    },
   },
 });
 

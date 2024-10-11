@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useMUD } from "../MUDContext";
-
+import { useComponentValue } from "@latticexyz/react";
 import {
   increaseSnake,
   INCREMENT_SCORE,
@@ -14,7 +14,7 @@ import {
   RESET_SCORE,
   scoreUpdates,
   stopGame,
-  MAX_SCORE
+  MAX_SCORE, RESET, STOP_GAME, RIGHT, setDisDirection, LEFT, UP, DOWN
 } from "../store/actions/index";
 import { IGlobalState } from "../store/reducers";
 import {
@@ -32,14 +32,16 @@ export interface ICanvasBoard {
 }
 const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const {
-    systemCalls: { reStartGame, increment },
+    network : { playerEntity },
+    components: { Position },
+    systemCalls: { reStartGame, move, increment },
   } = useMUD();
-  const inerData = async () => {
-    console.log("increment score :",await increment())
-  };
-  const reData = async () => {
-    console.log("reStartGame :",await reStartGame())
-  };
+
+  const position = useComponentValue(Position, playerEntity);
+  if (position === undefined) {
+     reStartGame()
+  }
+
   const dispatch = useDispatch();
   const snake1 = useSelector((state: IGlobalState) => state.snake);
   const disallowedDirection = useSelector(
@@ -80,15 +82,19 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
       if (disallowedDirection) {
         switch (event.key) {
           case "w":
+            move(1);
             moveSnake(0, -20, disallowedDirection);
             break;
           case "s":
+            move(3);
             moveSnake(0, 20, disallowedDirection);
             break;
           case "a":
+            move(4);
             moveSnake(-20, 0, disallowedDirection);
             break;
           case "d":
+            move(2);
             event.preventDefault();
             moveSnake(20, 0, disallowedDirection);
             break;
@@ -107,10 +113,9 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   );
 
   const resetBoard = useCallback(async () => {
-    reData()
+    reStartGame()
     window.removeEventListener("keypress", handleKeyEvents);
     dispatch(resetGame());
-    dispatch(scoreUpdates(RESET_SCORE));
     clearBoard(context);
     drawObject(context, snake1, "#91C483");
     drawObject(
@@ -145,7 +150,7 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
 
     //When the object is consumed
     if (!isConsumed && snake1[0].x === pos?.x && snake1[0].y === pos?.y) {
-      inerData();
+      increment()
       setIsConsumed(true);
     }
 
@@ -156,7 +161,7 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
       snake1[0].y <= 0 ||
       snake1[0].y >= height
     ) {
-      reData()
+      // reStartGame()
       setGameEnded(true);
       dispatch(stopGame());
       window.removeEventListener("keypress", handleKeyEvents);
