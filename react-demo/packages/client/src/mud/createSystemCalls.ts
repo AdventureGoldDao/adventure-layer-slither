@@ -31,10 +31,28 @@ export function createSystemCalls(
    *   (https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
    */
   { worldContract, waitForTransaction }: SetupNetworkResult,
-  { Counter,Position }: ClientComponents,
+  { 
+    Counter,
+    Position,
+    Balance,
+  }: ClientComponents,
 ) {
   const increment = async () => {
     const tx = await worldContract.write.app__increment();
+    await waitForTransaction(tx);
+    return getComponentValue(Counter, singletonEntity);
+  };
+  const getPlayerBalance = async () => {
+    const result = await worldContract.read.app__getCurrentBalance();
+    return result
+  };
+  const rechargeGameBalance = async () => {
+    const tx = await worldContract.write.app__startGame();
+    await waitForTransaction(tx);
+    return getComponentValue(Counter, singletonEntity);
+  };
+  const payForGame = async () => {
+    const tx = await worldContract.write.app__payForGame();
     await waitForTransaction(tx);
     return getComponentValue(Counter, singletonEntity);
   };
@@ -53,9 +71,11 @@ export function createSystemCalls(
   return {
     move,
     increment,
-    reStartGame
+    reStartGame,
+    getPlayerBalance,
+    rechargeGameBalance,
+    payForGame,
   };
-
 
 }
 

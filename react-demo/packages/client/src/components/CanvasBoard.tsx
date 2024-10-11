@@ -1,7 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { ethers } from "ethers";
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  AlertDialogCloseButton,
+  Button,
+
+  useDisclosure,
+} from '@chakra-ui/react'
 import { useDispatch, useSelector } from "react-redux";
 import { useMUD } from "../MUDContext";
 import { useComponentValue } from "@latticexyz/react";
+import { useEthers, useLookupAddress } from "@usedapp/core";
 import {
   increaseSnake,
   INCREMENT_SCORE,
@@ -42,6 +56,16 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
      reStartGame()
   }
 
+  const inerData = async () => {
+    console.log("increment score :",await increment())
+  };
+  const reData = async () => {
+    console.log("reStartGame :",await reStartGame())
+  };
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const cancelRef = React.useRef()
+
   const dispatch = useDispatch();
   const snake1 = useSelector((state: IGlobalState) => state.snake);
   const disallowedDirection = useSelector(
@@ -55,6 +79,9 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const [isConsumed, setIsConsumed] = useState<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
+
+  const { account } = useEthers();
+  const { ens } = useLookupAddress('');
 
   const moveSnake = useCallback(
     (dx = 0, dy = 0, ds: string) => {
@@ -105,11 +132,16 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
           disallowedDirection !== "UP" &&
           disallowedDirection !== "DOWN" &&
           event.key === "d"
-        )
+        ) {
+          if (!account) {
+            onOpen()
+            return
+          }
           moveSnake(20, 0, disallowedDirection); //Move RIGHT at start
+        }
       }
     },
-    [disallowedDirection, moveSnake]
+    [disallowedDirection, moveSnake, account]
   );
 
   const resetBoard = useCallback(async () => {
@@ -168,6 +200,18 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     } else setGameEnded(false);
   }, [context, pos, snake1, height, width, dispatch, handleKeyEvents]);
 
+  const { systemCalls: { getPlayerBalance } } = useMUD();
+
+  useEffect(() => {
+    if (gameEnded) {
+      getPlayerBalance(ethers.utils.getAddress(`${account}`)).then(data => {
+        console.log("gameEnded", data)
+      }).catch(err => {
+        console.log("getPlayerBalance Error:", err)
+      })
+    }
+  }, [gameEnded, dispatch, account]);
+  
   useEffect(() => {
     window.addEventListener("keypress", handleKeyEvents);
 
@@ -187,6 +231,29 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
         height={height}
       />
       <Instruction resetBoard={resetBoard} />
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+              Wallet Connect Notice
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              You need connect your wallet and pay before continuing.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button onClick={onClose}>
+                Close
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 };

@@ -5,3 +5,4 @@ pragma solidity >=0.8.24;
 
 import { Counter, CounterData } from "./tables/Counter.sol";
 import { Position, PositionData } from "./tables/Position.sol";
+import { Balance } from "./tables/Balance.sol";
