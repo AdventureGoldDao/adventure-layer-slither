@@ -12,6 +12,8 @@ import {
 
   useDisclosure,
 } from '@chakra-ui/react'
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react';
 import { useDispatch, useSelector } from "react-redux";
 import { useMUD } from "../MUDContext";
 import { useComponentValue } from "@latticexyz/react";
@@ -34,11 +36,65 @@ import { IGlobalState } from "../store/reducers";
 import {
   clearBoard,
   drawObject,
+  drawSnakeBody,
+  drawFood,
+  drawBorder,
   generateRandomPosition,
   hasSnakeCollided,
   IObjectBody,
 } from "../utils";
 import Instruction from "./Instructions";
+
+const styles: any = {
+  'canvas-container': css`
+    position: relative;
+    display: inline-block;
+    padding: 20px;
+    background: repeating-linear-gradient(
+      90deg,
+      black,
+      black 10px,
+      transparent 10px,
+      transparent 20px
+    ), 
+    repeating-linear-gradient(
+      180deg,
+      black,
+      black 10px,
+      transparent 10px,
+      transparent 20px
+    );
+
+    ::before,
+    ::after {
+      content: "#";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 16px;
+      background-repeat: repeat-x;
+      background-image: repeating-linear-gradient(
+        90deg,
+        white,
+        white 8px,
+        transparent 8px,
+        transparent 16px
+      );
+    }
+  `,
+  'border-hash': css`
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    font-family: monospace;
+    color: white;
+    white-space: pre;
+    text-align: center;
+  `,
+}
 
 export interface ICanvasBoard {
   height: number;
@@ -48,7 +104,10 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const {
     network : { playerEntity },
     components: { Position },
-    systemCalls: { reStartGame, move, increment },
+    systemCalls: {
+      reStartGame, move, increment,
+      getPlayerBalance, rechargeGameBalance, payForGame,
+    },
   } = useMUD();
 
   const position = useComponentValue(Position, playerEntity);
@@ -133,11 +192,23 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
           disallowedDirection !== "DOWN" &&
           event.key === "d"
         ) {
-          if (!account) {
-            onOpen()
-            return
-          }
+          // if (!account) {
+          //   onOpen()
+          //   return
+          // }
           moveSnake(20, 0, disallowedDirection); //Move RIGHT at start
+          // getPlayerBalance().then(data => {
+          //   if (data > 0) {
+          //     return
+          //   }
+          //   // alert('You need pay first.')
+          //   return rechargeGameBalance()
+          //   // return Promise.reject(new Error("Balance not available"))
+          // }).then(() => {
+          //   moveSnake(20, 0, disallowedDirection); //Move RIGHT at start
+          // }).catch(err => {
+          //   console.log("getPlayerBalance Error:", err)
+          // })
         }
       }
     },
@@ -149,11 +220,12 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     window.removeEventListener("keypress", handleKeyEvents);
     dispatch(resetGame());
     clearBoard(context);
-    drawObject(context, snake1, "#91C483");
-    drawObject(
+    drawSnakeBody(context, snake1, "#fff");
+    drawBorder(canvasRef.current, context, '#fff');
+    drawFood(
       context,
       [generateRandomPosition(width - 20, height - 20)],
-      "#676FA3"
+      "#f39b4b"
     ); //Draws object randomly
     window.addEventListener("keypress", handleKeyEvents);
   }, [context, dispatch, handleKeyEvents, height, snake1, width]);
@@ -177,8 +249,9 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     //Draw on canvas each time
     setContext(canvasRef.current && canvasRef.current.getContext("2d"));
     clearBoard(context);
-    drawObject(context, snake1, "#91C483");
-    drawObject(context, [pos], "#676FA3"); //Draws object randomly
+    drawSnakeBody(context, snake1, "#fff");
+    drawBorder(canvasRef.current, context, '#fff')
+    drawFood(context, [pos], "#f39b4b"); //Draws object randomly
 
     //When the object is consumed
     if (!isConsumed && snake1[0].x === pos?.x && snake1[0].y === pos?.y) {
@@ -200,18 +273,6 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     } else setGameEnded(false);
   }, [context, pos, snake1, height, width, dispatch, handleKeyEvents]);
 
-  const { systemCalls: { getPlayerBalance } } = useMUD();
-
-  useEffect(() => {
-    if (gameEnded) {
-      getPlayerBalance(ethers.utils.getAddress(`${account}`)).then(data => {
-        console.log("gameEnded", data)
-      }).catch(err => {
-        console.log("getPlayerBalance Error:", err)
-      })
-    }
-  }, [gameEnded, dispatch, account]);
-  
   useEffect(() => {
     window.addEventListener("keypress", handleKeyEvents);
 
@@ -222,14 +283,16 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
 
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        style={{
-          border: `3px solid ${gameEnded ? "red" : "black"}`,
-        }}
-        width={width}
-        height={height}
-      />
+      <div className="canvas-container">
+        <canvas
+          ref={canvasRef}
+          style={{
+            border: `3px solid ${gameEnded ? "#31281f" : "white"}`,
+          }}
+          width={width}
+          height={height}
+        />
+      </div>
       <Instruction resetBoard={resetBoard} />
       <AlertDialog
         isOpen={isOpen}

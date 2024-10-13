@@ -125,9 +125,9 @@ export const App = () => {
     <>
       <Container maxW="container.lg" centerContent>
         <Heading as="h1" size="xl">SNAKE GAME</Heading>
-        <div style={{marginTop: "12px"}}>
+        {false && <div style={{marginTop: "12px"}}>
           <WalletButton />
-        </div>
+        </div>}
         <Heading as="h2" size="md" mt={5} mb={0}>Max Score: {counter?.maxScore ?? "0"}</Heading>
         <Heading as="h2" size="md" mt={5} mb={5}>Current Score: {counter?.curScore ?? "0"}</Heading>
         <CanvasBoard height={600} width={1000} />

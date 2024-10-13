@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ChakraProvider, Container, Heading, Button } from "@chakra-ui/react";
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import ReactDOM from "react-dom/client";
@@ -9,6 +8,18 @@ import { MUDProvider } from "./MUDContext";
 import mudConfig from "contracts/mud.config";
 import { Provider } from "react-redux";
 import store from "./store";
+
+import { ethers } from "ethers";
+import {
+  ChakraProvider,
+  Box,
+  Button,
+  Text,
+  VStack,
+  Spinner,
+  useToast,
+  extendTheme,
+} from "@chakra-ui/react";
 
 // / import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { DAppProvider, Mainnet, Sepolia, ChainId, DEFAULT_SUPPORTED_CHAINS } from "@usedapp/core";
@@ -49,18 +60,74 @@ const config: any = {
     [AdventureLayer.chainId]: AdventureLayer.rpcUrl,
   },
   // supportedChains: [ChainId.Mainnet, ChainId.Goerli, ChainId.Kovan, ChainId.Rinkeby, ChainId.Ropsten, ChainId.Arbitrum, ChainId.Sepolia, AdventureLayer.chainId],
-  networks: [...DEFAULT_SUPPORTED_CHAINS, AdventureLayer,], // AdventureLocal2
+  networks: [...DEFAULT_SUPPORTED_CHAINS, AdventureLayer], // AdventureLocal2
 }
+
+// 定制 Chakra 主题，设置为黑白极客风格
+const theme = extendTheme({
+  styles: {
+    global: {
+      body: {
+        bg: "black",
+        color: "white",
+        fontFamily: "'Courier New', monospace",
+      },
+    },
+  },
+  components: {
+    Button: {
+      baseStyle: {
+        _focus: { boxShadow: "none" },
+        _hover: { bg: "gray.700" },
+      },
+    },
+    Kbd: {
+      baseStyle: {
+        color: "#666",
+      },
+    },
+  },
+});
+
+// const Main = () => {
+//   const [mudSetup, setMudSetup] = useState<any>(null);
+//   const [walletInfo, setWalletInfo] = useState<any>(null);
+
+//   const initializeMUD = async (provider: any, signer: any, address: string) => {
+//     try {
+//       // 初始化 MUD 系统，传递 address 并获得返回的 value
+//       const mudValue = await setup(address);
+//       setMudSetup(mudValue);
+//     } catch (error) {
+//       console.error("MUD initialization failed:", error);
+//     }
+//   };
+
+//   return (<ChakraProvider theme={theme}>
+//     <MUDProvider value={mudSetup}>
+//       <App />
+//     </MUDProvider>
+//   </ChakraProvider>)
+// }
+
+// root.render(
+//   <DAppProvider config={config}>
+//     <Provider store={store}>
+//       <Main/>
+//     </Provider>
+//   </DAppProvider>
+// );
 
 // TODO: figure out if we actually want this to be async or if we should render something else in the meantime
 setup().then(async (result) => {
   root.render(
     <DAppProvider config={config}>
       <Provider store={store}>
-        <ChakraProvider>
+        <ChakraProvider theme={theme}>
+
           <MUDProvider value={result}>
             <App />
-          </MUDProvider>,
+          </MUDProvider>
         </ChakraProvider>
       </Provider>
     </DAppProvider>
