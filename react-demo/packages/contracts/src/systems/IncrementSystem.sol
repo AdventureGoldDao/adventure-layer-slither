@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { System } from "@latticexyz/world/src/System.sol";
 import { Counter, Position, PositionData } from "../codegen/index.sol";
-import { addressToEntityKey } from "../addressToEntityKey.sol";
+import {System} from "@latticexyz/world/src/System.sol";
+import {addressToEntityKey} from "../addressToEntityKey.sol";
 
 contract IncrementSystem is System {
   function increment() public returns (uint32) {
@@ -25,19 +25,13 @@ contract IncrementSystem is System {
 
   function move(uint32 direction) public {
     bytes32 player = addressToEntityKey(address(_msgSender()));
-    PositionData memory pData = Position.get(player);
-    if (direction == 1) {
-      pData.y -= 20;
-    } else if (direction == 2) {
-      pData.x += 20;
-    } else if (direction == 3) {
-      pData.y += 20;
-    } else if (direction == 4) {
-      pData.x -= 20;
-    }
-    pData.m = direction;
+    Position.setM(player,direction);
+  }
 
-    Position.set(player, pData);
+  function getPositionData() public view returns (PositionData memory _p) {
+    bytes32 player = addressToEntityKey(address(_msgSender()));
+    PositionData memory _pData = Position.get(player);
+    return _pData;
   }
 
   function reStartGame() public {
@@ -49,5 +43,20 @@ contract IncrementSystem is System {
     Position.set(player, pData);
     reStartScore();
   }
+
+  function myFunction() public {
+    bytes32 player = addressToEntityKey(address(_msgSender()));
+    PositionData memory pData = Position.get(player);
+    if (pData.m == 1) {
+      Position.setX(player, pData.y - 20);
+    } else if (pData.m == 2) {
+      Position.setX(player, pData.x + 20);
+    } else if (pData.m == 3) {
+      Position.setX(player, pData.y + 20);
+    } else if (pData.m == 4) {
+      Position.setX(player, pData.x - 20);
+    }
+  }
+
 
 }

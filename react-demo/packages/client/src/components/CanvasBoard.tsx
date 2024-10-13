@@ -102,25 +102,17 @@ export interface ICanvasBoard {
 }
 const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const {
-    network : { playerEntity },
+    network : { playerEntity,doTask },
     components: { Position },
     systemCalls: {
-      reStartGame, move, increment,
-      getPlayerBalance, rechargeGameBalance, payForGame,
+      reStartGame, move, increment,getPositionData
     },
   } = useMUD();
 
-  const position = useComponentValue(Position, playerEntity);
-  if (position === undefined) {
-     reStartGame()
-  }
-
-  const inerData = async () => {
-    console.log("increment score :",await increment())
-  };
-  const reData = async () => {
-    console.log("reStartGame :",await reStartGame())
-  };
+  // const position = useComponentValue(Position, playerEntity);
+  // if (position === undefined) {
+  //    reStartGame()
+  // }
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const cancelRef = React.useRef()
@@ -163,6 +155,8 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     [dispatch]
   );
 
+  let isPaused = false
+
   const handleKeyEvents = useCallback(
     (event: KeyboardEvent) => {
       if (disallowedDirection) {
@@ -192,6 +186,8 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
           disallowedDirection !== "DOWN" &&
           event.key === "d"
         ) {
+          isPaused = true
+          doTask(true)
           // if (!account) {
           //   onOpen()
           //   return
@@ -216,7 +212,8 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   );
 
   const resetBoard = useCallback(async () => {
-    reStartGame()
+    await doTask(false)
+    await reStartGame()
     window.removeEventListener("keypress", handleKeyEvents);
     dispatch(resetGame());
     clearBoard(context);
@@ -230,7 +227,7 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     window.addEventListener("keypress", handleKeyEvents);
   }, [context, dispatch, handleKeyEvents, height, snake1, width]);
 
-  useEffect(() => {
+  useEffect(async () => {
     //Generate new object
     if (isConsumed) {
       const posi = generateRandomPosition(width - 20, height - 20);
@@ -245,7 +242,7 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     }
   }, [isConsumed, pos, height, width, dispatch]);
 
-  useEffect(() => {
+  useEffect(async () => {
     //Draw on canvas each time
     setContext(canvasRef.current && canvasRef.current.getContext("2d"));
     clearBoard(context);
@@ -255,7 +252,7 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
 
     //When the object is consumed
     if (!isConsumed && snake1[0].x === pos?.x && snake1[0].y === pos?.y) {
-      increment()
+      await increment()
       setIsConsumed(true);
     }
 
@@ -266,7 +263,7 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
       snake1[0].y <= 0 ||
       snake1[0].y >= height
     ) {
-      // reStartGame()
+      await doTask(false)
       setGameEnded(true);
       dispatch(stopGame());
       window.removeEventListener("keypress", handleKeyEvents);
@@ -280,6 +277,19 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
       window.removeEventListener("keypress", handleKeyEvents);
     };
   }, [disallowedDirection, handleKeyEvents]);
+
+    // useEffect( () => {
+    //   if (isPaused) {
+    //     const interval = setInterval(async () => {
+    //       if (gameEnded) {
+    //         isPaused = false
+    //         clearInterval(interval)
+    //       }
+    //       console.log("getPositionData:",await getPositionData())
+    //     },500)
+    //   }
+    // })
+
 
   return (
     <>

@@ -9,19 +9,19 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IBalanceSystem {
-  function app__startGame() external payable;
+  function startGame() external payable;
 
-  function app__getContractBalance() external view returns (uint256);
+  function getContractBalance() external view returns (uint256);
 
-  function app__getPlayerBalance(address player) external view returns (uint256);
+  function getPlayerBalance(address player) external view returns (uint256);
 
-  function app__getCurrentBalance() external view returns (uint256);
+  function getCurrentBalance() external view returns (uint256);
 
-  function app__setGameFee(uint256 newFee) external;
+  function setGameFee(uint256 newFee) external;
 
-  function app__deductBalance(address player, uint256 amount) external;
+  function deductBalance(address player, uint256 amount) external;
 
-  function app__rechargeBalance(address player, uint256 amount) external;
+  function rechargeBalance(address player, uint256 amount) external;
 
-  function app__payForGame(uint256 gf) external;
+  function payForGame(uint256 gf) external;
 }

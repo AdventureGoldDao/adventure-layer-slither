@@ -22,8 +22,8 @@ struct CounterData {
 }
 
 library Counter {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "app", name: "Counter", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x74626170700000000000000000000000436f756e746572000000000000000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "", name: "Counter", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x74620000000000000000000000000000436f756e746572000000000000000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0008020004040000000000000000000000000000000000000000000000000000);

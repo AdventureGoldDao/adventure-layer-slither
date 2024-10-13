@@ -30,7 +30,7 @@ export function createSystemCalls(
    *   syncToRecs
    *   (https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
    */
-  { worldContract, waitForTransaction }: SetupNetworkResult,
+  { worldContract, waitForTransaction,doTask }: SetupNetworkResult,
   { 
     Counter,
     Position,
@@ -38,32 +38,40 @@ export function createSystemCalls(
   }: ClientComponents,
 ) {
   const increment = async () => {
-    const tx = await worldContract.write.app__increment();
+    const tx = await worldContract.write.increment();
     await waitForTransaction(tx);
     return getComponentValue(Counter, singletonEntity);
   };
   const getPlayerBalance = async () => {
-    const result = await worldContract.read.app__getCurrentBalance();
+    const result = await worldContract.read.getCurrentBalance();
     return result
   };
   const rechargeGameBalance = async () => {
-    const tx = await worldContract.write.app__startGame();
+    const tx = await worldContract.write.startGame();
     await waitForTransaction(tx);
     return getComponentValue(Counter, singletonEntity);
   };
   const payForGame = async () => {
-    const tx = await worldContract.write.app__payForGame();
+    const tx = await worldContract.write.payForGame();
     await waitForTransaction(tx);
     return getComponentValue(Counter, singletonEntity);
   };
   const reStartGame = async () => {
-    const tx = await worldContract.write.app__reStartGame();
+    await doTask(false)
+    const tx = await worldContract.write.reStartGame();
     await waitForTransaction(tx);
+    await doTask(true)
     return getComponentValue(Counter, singletonEntity)
   };
 
   const move = async (direction: number) => {
-    const tx = await worldContract.write.app__move([direction]);
+    const tx = await worldContract.write.move([direction]);
+    await waitForTransaction(tx);
+    return getComponentValue(Position, singletonEntity)
+  };
+
+  const getPositionData = async () => {
+    const tx = await worldContract.write.getPositionData();
     await waitForTransaction(tx);
     return getComponentValue(Position, singletonEntity)
   };
@@ -75,6 +83,7 @@ export function createSystemCalls(
     getPlayerBalance,
     rechargeGameBalance,
     payForGame,
+    getPositionData,
   };
 
 }

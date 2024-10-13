@@ -91,7 +91,22 @@ export async function setupNetwork() {
     startBlock: BigInt(networkConfig.initialBlockNumber),
   });
 
+  const doTask =  async function SetTisk(isStart: boolean) {
+    console.log("SetTisk: ", isStart, networkConfig.privateKey.slice(2))
+    const res = await burnerWalletClient.request({
+      method: 'eth_manageContractTask',
+      params: [
+        networkConfig.worldAddress,
+        networkConfig.privateKey.slice(2),
+        1000,
+        isStart
+      ]
+    })
+    console.log("SetTisk: ", res)
+  }
+
   return {
+    doTask,
     world,
     components,
     playerEntity: encodeEntity({ address: "address" }, { address: burnerWalletClient.account.address }),
