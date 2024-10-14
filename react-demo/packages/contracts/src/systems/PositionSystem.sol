@@ -9,6 +9,11 @@ contract PositionSystem is System {
 
   bytes32[] public allPlayers;
 
+  function getScore() public view returns (CounterData memory _c) {
+    bytes32 player = addressToEntityKey(address(_msgSender()));
+    return Counter.get(player);
+  }
+
   function increment() public returns (uint32) {
     bytes32 player = addressToEntityKey(address(_msgSender()));
     CounterData memory counter = Counter.get(player);
@@ -27,8 +32,7 @@ contract PositionSystem is System {
 
   function getPositionData() public view returns (PositionData memory _p) {
     bytes32 player = addressToEntityKey(address(_msgSender()));
-    PositionData memory _pData = Position.get(player);
-    return _pData;
+    return Position.get(player);
   }
 
   function endGame() public {

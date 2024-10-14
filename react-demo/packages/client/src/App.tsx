@@ -114,12 +114,12 @@ export const App = () => {
   const {
     network : { playerEntity },
     components: { Counter },
-    systemCalls: { reStartGame },
+    systemCalls: { endGame },
   } = useMUD();
 
   const counter = useComponentValue(Counter, playerEntity);
   if (counter === undefined) {
-      reStartGame();
+    endGame();
   }
   return (
     <>

@@ -37,6 +37,9 @@ export function createSystemCalls(
     Balance,
   }: ClientComponents,
 ) {
+  const getScore = async () => {
+    return await worldContract.read.getScore();
+  };
   const increment = async () => {
     const tx = await worldContract.write.increment();
     await waitForTransaction(tx);
@@ -75,13 +78,12 @@ export function createSystemCalls(
   };
 
   const getPositionData = async () => {
-    const tx = await worldContract.write.getPositionData();
-    await waitForTransaction(tx);
-    return getComponentValue(Position, singletonEntity)
+    return await worldContract.read.getPositionData();
   };
 
   return {
     move,
+    getScore,
     increment,
     startGame,
     endGame,
