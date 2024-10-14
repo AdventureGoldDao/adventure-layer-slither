@@ -233,6 +233,10 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   useEffect(() => {
     //Generate new object
     if (isConsumed) {
+      (async () => {
+        console.log("increment(): ", await increment())
+      })()
+
       const posi = generateRandomPosition(width - 20, height - 20);
       setPos(posi);
       setIsConsumed(false);
@@ -255,7 +259,6 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
 
     //When the object is consumed
     if (!isConsumed && snake1[0].x === pos?.x && snake1[0].y === pos?.y) {
-      increment()
       setIsConsumed(true);
     }
 

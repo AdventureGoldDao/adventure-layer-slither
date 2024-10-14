@@ -50,7 +50,7 @@ export function* moveSaga(params: {
         yield put(setDisDirection(UP));
         break;
     }
-    yield delay(1000);
+    yield delay(300);
   }
 }
 

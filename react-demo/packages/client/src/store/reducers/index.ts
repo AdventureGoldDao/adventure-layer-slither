@@ -86,7 +86,6 @@ const gameReducer = (state = globalState, action: any) => {
         score: state.score + 1,
       };
     case MAX_SCORE:
-      console.log("on MAX_SCORE", action.payload);
       return { ...state, maxScore: action.payload };
     default:
       return state;
