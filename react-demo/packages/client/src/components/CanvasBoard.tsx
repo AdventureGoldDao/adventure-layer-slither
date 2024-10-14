@@ -111,7 +111,9 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
 
   const counter = useComponentValue(Counter, playerEntity);
   if (counter === undefined) {
-    console.log("getScore(): ", getScore())
+    (async () => {
+      console.log("getScore(): ", await getScore())
+    })()
   }
 
   const { isOpen, onOpen, onClose } = useDisclosure()
