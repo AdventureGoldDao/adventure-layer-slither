@@ -3,10 +3,10 @@
  * for changes in the World state (using the System contracts).
  */
 
-import { getComponentValue } from "@latticexyz/recs";
-import { ClientComponents } from "./createClientComponents";
-import { SetupNetworkResult } from "./setupNetwork";
-import { singletonEntity } from "@latticexyz/store-sync/recs";
+import {getComponentValue} from "@latticexyz/recs";
+import {ClientComponents} from "./createClientComponents";
+import {SetupNetworkResult} from "./setupNetwork";
+import {singletonEntity} from "@latticexyz/store-sync/recs";
 
 export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
@@ -38,9 +38,7 @@ export function createSystemCalls(
   }: ClientComponents,
 ) {
   const getScore = async () => {
-    const tx = await worldContract.write.getScore();
-    await waitForTransaction(tx);
-    return getComponentValue(Counter, singletonEntity);
+    return await worldContract.read.getScore();
   };
   const increment = async () => {
     const tx = await worldContract.write.increment();
@@ -48,8 +46,7 @@ export function createSystemCalls(
     return getComponentValue(Counter, singletonEntity);
   };
   const getPlayerBalance = async () => {
-    const result = await worldContract.read.getCurrentBalance();
-    return result
+    return await worldContract.read.getCurrentBalance()
   };
   const rechargeGameBalance = async () => {
     const tx = await worldContract.write.startGame();
@@ -78,9 +75,7 @@ export function createSystemCalls(
   };
 
   const getPositionData = async () => {
-    const tx = await worldContract.write.getPositionData();
-    await waitForTransaction(tx);
-    return getComponentValue(Position, singletonEntity)
+    return await worldContract.read.getPositionData()
   };
 
   return {

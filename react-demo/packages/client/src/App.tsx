@@ -111,16 +111,6 @@ function WalletButton() {
 }
 
 export const App = () => {
-  const {
-    network : { playerEntity },
-    components: { Counter },
-    systemCalls: { getScore },
-  } = useMUD();
-
-  const counter = useComponentValue(Counter, playerEntity);
-  console.log("counter : ", counter);
-  getScore()
-  console.log("counter : ", counter);
   return (
     <>
       <Container maxW="container.lg" centerContent>
@@ -128,8 +118,8 @@ export const App = () => {
         {false && <div style={{marginTop: "12px"}}>
           <WalletButton />
         </div>}
-        <Heading as="h2" size="md" mt={5} mb={0}>Max Score: {counter?.maxScore ?? "0"}</Heading>
-        <Heading as="h2" size="md" mt={5} mb={5}>Current Score: {counter?.curScore ?? "0"}</Heading>
+        <MaxScoreCard />
+        <ScoreCard />
         <CanvasBoard height={600} width={1000} />
       </Container>
     </>

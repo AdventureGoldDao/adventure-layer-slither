@@ -103,16 +103,16 @@ export interface ICanvasBoard {
 const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const {
     network : { playerEntity },
-    components: { Position },
+    components: { Counter },
     systemCalls: {
-      startGame, endGame, move, increment,getPositionData
+      getScore, startGame, endGame, move, increment,getPositionData
     },
   } = useMUD();
 
-  // const position = useComponentValue(Position, playerEntity);
-  // if (position === undefined) {
-  //    reStartGame()
-  // }
+  const counter = useComponentValue(Counter, playerEntity);
+  if (counter === undefined) {
+    console.log("getScore(): ", getScore())
+  }
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const cancelRef = React.useRef()
@@ -122,6 +122,8 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const disallowedDirection = useSelector(
     (state: IGlobalState) => state.disallowedDirection
   );
+
+  dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
 
   const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [pos, setPos] = useState<IObjectBody>(
