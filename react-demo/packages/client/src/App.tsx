@@ -118,9 +118,9 @@ export const App = () => {
   } = useMUD();
 
   const counter = useComponentValue(Counter, playerEntity);
-  if (counter === undefined) {
-    getScore().then((res) => console.log("getScore : ", res));
-  }
+  console.log("counter : ", counter);
+  getScore()
+  console.log("counter : ", counter);
   return (
     <>
       <Container maxW="container.lg" centerContent>
