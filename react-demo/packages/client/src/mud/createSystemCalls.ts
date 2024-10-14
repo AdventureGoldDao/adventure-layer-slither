@@ -43,7 +43,7 @@ export function createSystemCalls(
   const increment = async () => {
     const tx = await worldContract.write.increment();
     await waitForTransaction(tx);
-    return getComponentValue(Counter, singletonEntity);
+    return await getScore();
   };
   const getPlayerBalance = async () => {
     return await worldContract.read.getCurrentBalance()
@@ -51,17 +51,16 @@ export function createSystemCalls(
   const rechargeGameBalance = async () => {
     const tx = await worldContract.write.startGame();
     await waitForTransaction(tx);
-    return getComponentValue(Counter, singletonEntity);
+    return await getScore();
   };
   const payForGame = async () => {
     const tx = await worldContract.write.payForGame();
     await waitForTransaction(tx);
     return getComponentValue(Counter, singletonEntity);
   };
-  const startGame = async () => {
-    const tx = await worldContract.write.startGame();
+  const stGame = async () => {
+    const tx = await worldContract.write.stGame();
     await waitForTransaction(tx);
-    return getComponentValue(Position, singletonEntity)
   };
   const endGame = async () => {
     const tx = await worldContract.write.endGame();
@@ -71,7 +70,6 @@ export function createSystemCalls(
   const move = async (direction: number) => {
     const tx = await worldContract.write.move([direction]);
     await waitForTransaction(tx);
-    return getComponentValue(Position, singletonEntity)
   };
 
   const getPositionData = async () => {
@@ -82,7 +80,7 @@ export function createSystemCalls(
     move,
     getScore,
     increment,
-    startGame,
+    stGame,
     endGame,
     getPlayerBalance,
     rechargeGameBalance,

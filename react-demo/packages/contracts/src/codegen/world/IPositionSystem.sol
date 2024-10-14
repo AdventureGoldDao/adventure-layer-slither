@@ -11,17 +11,17 @@ import { CounterData, PositionData } from "../index.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IPositionSystem {
-  function getScore() external view returns (CounterData memory _c);
+  function getScore() external view returns (CounterData memory c);
 
   function increment() external returns (uint32);
 
   function move(uint32 direction) external;
 
-  function getPositionData() external view returns (PositionData memory _p);
+  function getPositionData() external view returns (PositionData memory p);
 
   function endGame() external;
 
-  function startGame(bytes32 player) external;
+  function stGame() external;
 
   function myFunction() external;
 }

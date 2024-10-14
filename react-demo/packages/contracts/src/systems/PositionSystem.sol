@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { Counter, CounterData, Position, PositionData } from "../codegen/index.sol";
+import "../codegen/tables/Counter.sol";
+import "../codegen/tables/Position.sol";
+import {Counter, CounterData, Position, PositionData} from "../codegen/index.sol";
 import {System} from "@latticexyz/world/src/System.sol";
 import {addressToEntityKey} from "../addressToEntityKey.sol";
 
@@ -9,7 +11,7 @@ contract PositionSystem is System {
 
   bytes32[] public allPlayers;
 
-  function getScore() public view returns (CounterData memory _c) {
+  function getScore() public view returns (CounterData memory c) {
     bytes32 player = addressToEntityKey(address(_msgSender()));
     return Counter.get(player);
   }
@@ -30,26 +32,13 @@ contract PositionSystem is System {
     Position.setM(player,direction);
   }
 
-  function getPositionData() public view returns (PositionData memory _p) {
+  function getPositionData() public view returns (PositionData memory p) {
     bytes32 player = addressToEntityKey(address(_msgSender()));
     return Position.get(player);
   }
 
   function endGame() public {
     bytes32 player = addressToEntityKey(address(_msgSender()));
-    PositionSystem.remove(player);
-    Counter.setCurScore(player, uint32(0));
-  }
-
-  function startGame(bytes32 player) public {
-    if (!exists(player)) {
-      allPlayers.push(player);
-      Position.set(player, PositionData({x: 560, y: 300, m: 0}));
-      Position.setM(player,uint32(2));
-    }
-  }
-
-  function remove(bytes32 player) internal {
     for (uint256 i = 0; i < allPlayers.length; i++) {
       if (allPlayers[i] == player) {
         allPlayers[i] = allPlayers[allPlayers.length - 1];
@@ -58,6 +47,15 @@ contract PositionSystem is System {
       }
     }
     Position.deleteRecord(player);
+    Counter.setCurScore(player, uint32(0));
+  }
+
+  function stGame() public {
+    bytes32 player = addressToEntityKey(address(_msgSender()));
+    if (!exists(player)) {
+      allPlayers.push(player);
+      Position.set(player,  uint32(560),  uint32(300), uint32(2));
+    }
   }
 
   function myFunction() external {

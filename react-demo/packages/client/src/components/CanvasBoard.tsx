@@ -105,16 +105,15 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     network : { playerEntity },
     components: { Counter },
     systemCalls: {
-      getScore, startGame, endGame, move, increment,getPositionData
+      getScore, stGame, endGame, move, increment,getPositionData
     },
   } = useMUD();
 
   const counter = useComponentValue(Counter, playerEntity);
-  if (counter === undefined) {
-    (async () => {
-      console.log("getScore(): ", await getScore())
-    })()
-  }
+
+  // (async () => {
+  //   console.log("getPositionData:",await getPositionData())
+  // })()
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const cancelRef = React.useRef()
@@ -124,8 +123,6 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const disallowedDirection = useSelector(
     (state: IGlobalState) => state.disallowedDirection
   );
-
-  dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
 
   const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [pos, setPos] = useState<IObjectBody>(
@@ -158,9 +155,13 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     },
     [dispatch]
   );
-
+  let currentKey = "";
   const handleKeyEvents = useCallback(
     (event: KeyboardEvent) => {
+      if (event.key == currentKey) {
+        return
+      }
+      currentKey = event.key;
       if (disallowedDirection) {
         switch (event.key) {
           case "w":
@@ -188,10 +189,11 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
           disallowedDirection !== "DOWN" &&
           event.key === "d"
         ) {
-          startGame();
-          getPositionData().then(data => {
-            console.log("getPositionData:", data)
-          })
+
+          (async () => {
+            console.log("stGame:", await stGame())
+            console.log("getPositionData:",await getPositionData())
+          })()
           // if (!account) {
           //   onOpen()
           //   return
@@ -219,6 +221,7 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     endGame()
     window.removeEventListener("keypress", handleKeyEvents);
     dispatch(resetGame());
+    dispatch(scoreUpdates(RESET_SCORE));
     clearBoard(context);
     drawSnakeBody(context, snake1, "#fff");
     drawBorder(canvasRef.current, context, '#fff');
@@ -231,6 +234,7 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   }, [context, dispatch, handleKeyEvents, height, snake1, width]);
 
   useEffect(() => {
+    dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
     //Generate new object
     if (isConsumed) {
       (async () => {
