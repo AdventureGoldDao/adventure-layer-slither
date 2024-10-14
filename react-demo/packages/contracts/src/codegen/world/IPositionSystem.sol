@@ -6,20 +6,20 @@ pragma solidity >=0.8.24;
 import { PositionData } from "../index.sol";
 
 /**
- * @title IIncrementSystem
+ * @title IPositionSystem
  * @author MUD (https://mud.dev) by Lattice (https://lattice.xyz)
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
-interface IIncrementSystem {
+interface IPositionSystem {
   function increment() external returns (uint32);
-
-  function reStartScore() external;
 
   function move(uint32 direction) external;
 
   function getPositionData() external view returns (PositionData memory _p);
 
-  function reStartGame() external;
+  function endGame() external;
+
+  function startGame(bytes32 player) external;
 
   function myFunction() external;
 }
