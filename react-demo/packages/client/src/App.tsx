@@ -114,12 +114,12 @@ export const App = () => {
   const {
     network : { playerEntity },
     components: { Counter },
-    systemCalls: { endGame },
+    systemCalls: { getScore },
   } = useMUD();
 
   const counter = useComponentValue(Counter, playerEntity);
   if (counter === undefined) {
-    endGame();
+    getScore().then((res) => console.log("getScore : ", res));
   }
   return (
     <>
