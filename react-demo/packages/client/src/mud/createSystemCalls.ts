@@ -30,7 +30,7 @@ export function createSystemCalls(
    *   syncToRecs
    *   (https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
    */
-  { worldContract, waitForTransaction,doTask }: SetupNetworkResult,
+  { worldContract, waitForTransaction }: SetupNetworkResult,
   { 
     Counter,
     Position,
@@ -62,13 +62,11 @@ export function createSystemCalls(
     return getComponentValue(Counter, singletonEntity);
   };
   const startGame = async () => {
-    await doTask(false)
     const tx = await worldContract.write.startGame();
     await waitForTransaction(tx);
     return getComponentValue(Position, singletonEntity)
   };
   const endGame = async () => {
-    await doTask(false)
     const tx = await worldContract.write.endGame();
     await waitForTransaction(tx);
   };
