@@ -38,8 +38,8 @@ const Nitro10: MUDChain = {
     },
     rpcUrls: {
         default: {
-            http: ["http://34.228.184.10:8587"],
-            webSocket: ["ws://34.228.184.10:8588"],
+            http: ["http://adv.xuyanzu.com"],
+            webSocket: ["ws://adv.xuyanzu.com"],
         },
     }
 };
