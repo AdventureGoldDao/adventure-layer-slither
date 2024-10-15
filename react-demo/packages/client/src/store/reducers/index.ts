@@ -11,6 +11,7 @@ import {
   SET_DIS_DIRECTION,
   UP,
   MAX_SCORE,
+  LOCATE_SNAKE,
 } from "../actions/index";
 
 
@@ -37,6 +38,7 @@ const gameReducer = (state = globalState, action: any) => {
     case LEFT:
     case UP:
     case DOWN: {
+      // let newSnake = [...state.snake];
       let newSnake = [...state.snake.slice(0, 3)];
       newSnake = [{
         x: state.snake[0].x + action.payload[0],
@@ -64,19 +66,58 @@ const gameReducer = (state = globalState, action: any) => {
         disallowedDirection: ""
       };
 
-    case INCREASE_SNAKE:
-      const snakeLen = state.snake.length;
+    case LOCATE_SNAKE:
+      const px = action.payload[0]
+      const py = action.payload[1]
+      const ps = action.payload[2]
+
+      let snake: any[] = [
+        { x: px, y: py },
+      ]
+      switch (ps) {
+        case 1:
+          snake = [
+            ...snake,
+            { x: px, y: py + 20 },
+            { x: px, y: py + 40 },
+          ]
+        case 2:
+          snake = [
+            ...snake,
+            { x: px - 20, y: py },
+            { x: px - 40, y: py },
+          ]
+        case 3:
+          snake = [
+            ...snake,
+            { x: px, y: py - 20 },
+            { x: px, y: py - 40 },
+          ]
+        case 4:
+          snake = [
+            ...snake,
+            { x: px + 20, y: py },
+            { x: px + 40, y: py },
+          ]
+      }
       return {
         ...state,
-        snake: [
-          ...state.snake,
-          {
-            x: state.snake[snakeLen - 1].x - 20,
-            y: state.snake[snakeLen - 1].y - 20,
-          },
-        ],
+        snake: snake,
+        disallowedDirection: ""
       };
 
+    case INCREASE_SNAKE:
+        const snakeLen = state.snake.length;
+        return {
+          ...state,
+          snake: [
+            ...state.snake,
+            {
+              x: state.snake[snakeLen - 1].x - 20,
+              y: state.snake[snakeLen - 1].y - 20,
+            },
+          ],
+        };
     case RESET_SCORE:
       return { ...state, score: 0 };
 

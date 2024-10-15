@@ -19,3 +19,15 @@ export async function setup() {
     systemCalls,
   };
 }
+
+export async function setupCustom(walletAddress: string) {
+  const network = await setupNetwork(walletAddress);
+  const components = createClientComponents(network);
+  const systemCalls = createSystemCalls(network, components);
+
+  return {
+    network,
+    components,
+    systemCalls,
+  };
+}

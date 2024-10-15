@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import ReactDOM from "react-dom/client";
+import './index.css';
 import { App } from "./App";
-import { setup } from "./mud/setup";
+import { WalletConnector } from "./Connector";
+import { setup, setupCustom } from "./mud/setup";
 import { MUDProvider } from "./MUDContext";
 import mudConfig from "contracts/mud.config";
 import { Provider } from "react-redux";
 import store from "./store";
+import { shortenAddress, useEthers, useLookupAddress } from "@usedapp/core";
 
 import { ethers } from "ethers";
 import {
@@ -18,6 +21,7 @@ import {
   VStack,
   Spinner,
   useToast,
+  Heading,
   extendTheme,
 } from "@chakra-ui/react";
 
@@ -89,31 +93,60 @@ const theme = extendTheme({
   },
 });
 
-// const Main = () => {
-//   const [mudSetup, setMudSetup] = useState<any>(null);
-//   const [walletInfo, setWalletInfo] = useState<any>(null);
+const Main = () => {
+  const { account } = useEthers();
+  const [mudSetup, setMudSetup] = useState<any>(null);
+  const [walletInfo, setWalletInfo] = useState<any>(null);
 
-//   const initializeMUD = async (provider: any, signer: any, address: string) => {
-//     try {
-//       // 初始化 MUD 系统，传递 address 并获得返回的 value
-//       const mudValue = await setup(address);
-//       setMudSetup(mudValue);
-//     } catch (error) {
-//       console.error("MUD initialization failed:", error);
-//     }
-//   };
+  const initializeMUD = async (provider: any, signer: any, address: string) => {
+    try {
+      // 初始化 MUD 系统，传递 address 并获得返回的 value
+      const mudValue = await setupCustom(address);
+      setMudSetup(mudValue);
 
-//   return (<ChakraProvider theme={theme}>
-//     <MUDProvider value={mudSetup}>
-//       <App />
-//     </MUDProvider>
-//   </ChakraProvider>)
-// }
+      // https://vitejs.dev/guide/env-and-mode.html
+      if (import.meta.env.DEV) {
+        const { mount: mountDevTools } = await import("@latticexyz/dev-tools");
+        mountDevTools({
+          config: mudConfig,
+          publicClient: mudValue.network.publicClient,
+          walletClient: mudValue.network.walletClient,
+          latestBlock$: mudValue.network.latestBlock$,
+          storedBlockLogs$: mudValue.network.storedBlockLogs$,
+          worldAddress: mudValue.network.worldContract.address,
+          worldAbi: mudValue.network.worldContract.abi,
+          write$: mudValue.network.write$,
+          recsWorld: mudValue.network.world,
+        });
+      }
+    } catch (error) {
+      console.error("MUD initialization failed:", error);
+    }
+  };
 
+  const handleWalletConnect = (provider: any, signer: any, address: string) => {
+    setWalletInfo({ provider, signer, address });
+    initializeMUD(provider, signer, address);
+  };
+
+  return (<ChakraProvider theme={theme}>
+    {!walletInfo ? (
+      <WalletConnector onConnect={handleWalletConnect} />
+    ) : mudSetup ? (
+      <MUDProvider value={mudSetup}>
+        <App />
+      </MUDProvider>
+    ) : (
+      <Text>Initializing game... Please wait.</Text>
+    )}
+  </ChakraProvider>)
+}
+
+// TODO Replace if we need connect
 // root.render(
 //   <DAppProvider config={config}>
 //     <Provider store={store}>
-//       <Main/>
+//       <Main />
 //     </Provider>
 //   </DAppProvider>
 // );

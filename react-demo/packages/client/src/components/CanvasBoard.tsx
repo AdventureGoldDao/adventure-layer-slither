@@ -30,6 +30,8 @@ import {
   RESET_SCORE,
   scoreUpdates,
   stopGame,
+  locateSnake,
+  LOCATE_SNAKE,
   MAX_SCORE, RESET, STOP_GAME, RIGHT, setDisDirection, LEFT, UP, DOWN
 } from "../store/actions/index";
 import { IGlobalState } from "../store/reducers";
@@ -56,7 +58,7 @@ const styles: any = {
       black 10px,
       transparent 10px,
       transparent 20px
-    ), 
+    ),
     repeating-linear-gradient(
       180deg,
       black,

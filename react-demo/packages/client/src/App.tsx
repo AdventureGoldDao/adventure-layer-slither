@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useComponentValue } from "@latticexyz/react";
-import { Container, Heading, Button } from "@chakra-ui/react";
+import { Container, Heading, Button, Kbd } from "@chakra-ui/react";
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import { useMUD } from "./MUDContext";
@@ -111,10 +111,16 @@ function WalletButton() {
 }
 
 export const App = () => {
+  const { account, activateBrowserWallet, deactivate, error } = useEthers();
+
   return (
     <>
       <Container maxW="container.lg" centerContent>
         <Heading as="h1" size="xl">SNAKE GAME</Heading>
+        { account && <div style={{marginTop: "12px"}}>
+          <Kbd>{shortenAddress(account)}</Kbd>
+          </div>
+        }
         {false && <div style={{marginTop: "12px"}}>
           <WalletButton />
         </div>}

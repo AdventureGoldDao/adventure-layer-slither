@@ -8,6 +8,7 @@ import {
   fallback,
   webSocket,
   http,
+  custom,
   createWalletClient,
   Hex,
   ClientConfig,
@@ -35,7 +36,7 @@ import mudConfig from "contracts/mud.config";
 
 export type SetupNetworkResult = Awaited<ReturnType<typeof setupNetwork>>;
 
-export async function setupNetwork() {
+export async function setupNetwork(walletAddress: string | null) {
   const networkConfig = await getNetworkConfig();
 
   /*
@@ -45,6 +46,7 @@ export async function setupNetwork() {
   const clientOptions = {
     chain: networkConfig.chain,
     transport: transportObserver(fallback([webSocket(), http()])),
+    // transport: custom(window.ethereum),  // 使用浏览器提供的 Ethereum 对象
     pollingInterval: 1000,
   } as const satisfies ClientConfig;
 
@@ -56,14 +58,24 @@ export async function setupNetwork() {
    */
   const write$ = new Subject<ContractWrite>();
 
+  // const walletClient = createWalletClient({
+  //   transport: custom(window.ethereum),  // 使用浏览器提供的 Ethereum 对象
+  // });
+  // const accounts = await walletClient.requestAddresses();
+  // console.log(`burnerWalletClient.requestAddresses = `, accounts)
   /*
    * Create a temporary wallet and a viem client for it
    * (see https://viem.sh/docs/clients/wallet.html).
    */
   const burnerAccount = createBurnerAccount(networkConfig.privateKey as Hex);
+  let clientAddress = burnerAccount // accounts[0]
+  // if (walletAddress) {
+  //   clientAddress = walletAddress
+  // }
   const burnerWalletClient = createWalletClient({
     ...clientOptions,
-    account: burnerAccount
+    // account: accounts[0],
+    account: clientAddress,
   })
     .extend(transactionQueue())
     .extend(writeObserver({ onWrite: (write) => write$.next(write) }));

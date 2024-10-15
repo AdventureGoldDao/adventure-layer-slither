@@ -18,6 +18,7 @@ export const INCREASE_SNAKE = "INCREASE_SNAKE";
 export const INCREMENT_SCORE = "INCREMENT_SCORE";
 export const MAX_SCORE = "MAX_SCORE";
 export const RESET_SCORE = "RESET_SCORE";
+export const LOCATE_SNAKE = "LOCATE_SNAKE";
 export interface ISnakeCoord {
   x: number;
   y: number;
@@ -46,4 +47,9 @@ export const increaseSnake = () => ({
 
 export const scoreUpdates = (type: string) => ({
   type
+});
+
+export const locateSnake = (dx: number, dy: number, ds: number) => ({
+  type: LOCATE_SNAKE,
+  payload: [dx, dy, ds]
 });
