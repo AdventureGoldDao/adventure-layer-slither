@@ -123,17 +123,11 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const disallowedDirection = useSelector(
     (state: IGlobalState) => state.disallowedDirection
   );
-  dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
   useEffect(() => {
     dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
-    const ts = setInterval(() => {
-      dispatch(locateSnake(position?.x ?? 0,position?.y ?? 0,position?.m ?? 0))
-    }, 100)
-
-    return () => {
-      clearInterval(ts)
-    }
-  }, [dispatch])
+    console.log("position:", position)
+    dispatch(locateSnake(position?.x ?? 0,position?.y ?? 0,position?.m ?? 0))
+  }, [dispatch,position, counter])
 
 
   const [gameEnded, setGameEnded] = useState<boolean>(false);
@@ -267,7 +261,6 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
 
     //When the object is consumed
     if (!isConsumed && snake1[0].x === pos?.x && snake1[0].y === pos?.y) {
-      console.log("getPositionData:",position)
       increment()
       setIsConsumed(true);
     }
