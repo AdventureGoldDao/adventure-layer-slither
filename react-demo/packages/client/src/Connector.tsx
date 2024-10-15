@@ -42,7 +42,7 @@ async function addNetwork(chainId) {
       symbol: 'AGLD',
       decimals: 18,
     },
-    rpcUrls: ['http://adv.xuyanzu.com/shard'], // 替换为目标网络的 RPC URL
+    rpcUrls: ['http://test-game.xuyanzu.com/shard'], // 替换为目标网络的 RPC URL
     // blockExplorerUrls: ['https://sepolia.etherscan.io'], // 替换为区块浏览器 URL
   };
 

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "wait-port http://adv.xuyanzu.com/shard && vite",
+    "dev": "wait-port http://test-game.xuyanzu.com/shard && vite",
     "preview": "vite preview",
     "test": "tsc --noEmit"
   },
