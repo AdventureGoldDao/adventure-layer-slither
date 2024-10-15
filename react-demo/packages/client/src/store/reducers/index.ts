@@ -71,53 +71,53 @@ const gameReducer = (state = globalState, action: any) => {
       const py = action.payload[1]
       const ps = action.payload[2]
 
-      let snake: any[] = [
+      let newSnake: any[] = [
         { x: px, y: py },
       ]
-      switch (ps) {
-        case 1:
-          snake = [
-            ...snake,
-            { x: px, y: py + 20 },
-            { x: px, y: py + 40 },
-          ]
-        case 2:
-          snake = [
-            ...snake,
-            { x: px - 20, y: py },
-            { x: px - 40, y: py },
-          ]
-        case 3:
-          snake = [
-            ...snake,
-            { x: px, y: py - 20 },
-            { x: px, y: py - 40 },
-          ]
-        case 4:
-          snake = [
-            ...snake,
-            { x: px + 20, y: py },
-            { x: px + 40, y: py },
-          ]
+      if (ps == 1) {
+        newSnake = [
+          ...newSnake,
+          { x: px, y: py + 20 },
+          { x: px, y: py + 40 },
+        ]
+      } else if (ps == 2) {
+        newSnake = [
+          ...newSnake,
+          { x: px - 20, y: py },
+          { x: px - 40, y: py },
+        ]
+      } else if (ps == 3) {
+        newSnake = [
+          ...newSnake,
+          { x: px, y: py - 20 },
+          { x: px, y: py - 40 },
+        ]
+      } else if (ps == 4) {
+        newSnake = [
+          ...newSnake,
+          { x: px + 20, y: py },
+          { x: px + 40, y: py },
+        ]
       }
+
       return {
         ...state,
-        snake: snake,
-        disallowedDirection: ""
+        snake: newSnake,
+        disallowedDirection: state.disallowedDirection,
       };
 
     case INCREASE_SNAKE:
-        const snakeLen = state.snake.length;
-        return {
-          ...state,
-          snake: [
-            ...state.snake,
-            {
-              x: state.snake[snakeLen - 1].x - 20,
-              y: state.snake[snakeLen - 1].y - 20,
-            },
-          ],
-        };
+      const snakeLen = state.snake.length;
+      return {
+        ...state,
+        snake: [
+          ...state.snake,
+          {
+            x: state.snake[snakeLen - 1].x - 20,
+            y: state.snake[snakeLen - 1].y - 20,
+          },
+        ],
+      };
     case RESET_SCORE:
       return { ...state, score: 0 };
 
