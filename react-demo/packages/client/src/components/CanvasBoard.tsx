@@ -124,6 +124,17 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
     (state: IGlobalState) => state.disallowedDirection
   );
   dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
+  useEffect(() => {
+    dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
+    const ts = setInterval(() => {
+      dispatch(locateSnake(position?.x ?? 0,position?.y ?? 0,position?.m ?? 0))
+    }, 100)
+
+    return () => {
+      clearInterval(ts)
+    }
+  }, [dispatch])
+
 
   const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [pos, setPos] = useState<IObjectBody>(

@@ -70,7 +70,7 @@ const gameReducer = (state = globalState, action: any) => {
       const px = action.payload[0]
       const py = action.payload[1]
       const ps = action.payload[2]
-
+      if (!ps) { return state }
       let newSnake: any[] = [
         { x: px, y: py },
       ]
