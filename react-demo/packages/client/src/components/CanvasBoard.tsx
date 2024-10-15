@@ -123,14 +123,17 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const disallowedDirection = useSelector(
     (state: IGlobalState) => state.disallowedDirection
   );
-  useEffect(() => {
-    dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
-    console.log("position:", position)
-    dispatch(locateSnake(position?.x ?? 0,position?.y ?? 0,position?.m ?? 0))
-  }, [dispatch,position, counter])
+
 
 
   const [gameEnded, setGameEnded] = useState<boolean>(false);
+  useEffect(() => {
+    dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
+    if (!gameEnded) {
+      console.log("position:", position)
+      dispatch(locateSnake(position?.x ?? 0,position?.y ?? 0,position?.m ?? 0))
+    }
+  }, [dispatch,position, counter, gameEnded])
   const [pos, setPos] = useState<IObjectBody>(
     generateRandomPosition(width - 20, height - 20)
   );
