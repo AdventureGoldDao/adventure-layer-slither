@@ -65,11 +65,11 @@ contract PositionSystem is System {
       if (pData.m == 0) {
         continue;
       } else if (pData.m == 1) {
-        Position.setX(allPlayers[i], pData.y - 20);
+        Position.setY(allPlayers[i], pData.y - 20);
       } else if (pData.m == 2) {
         Position.setX(allPlayers[i], pData.x + 20);
       } else if (pData.m == 3) {
-        Position.setX(allPlayers[i], pData.y + 20);
+        Position.setY(allPlayers[i], pData.y + 20);
       } else if (pData.m == 4) {
         Position.setX(allPlayers[i], pData.x - 20);
       }

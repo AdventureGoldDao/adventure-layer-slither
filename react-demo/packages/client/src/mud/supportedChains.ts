@@ -14,6 +14,21 @@
 import { MUDChain, mudFoundry, redstone, garnet } from "@latticexyz/common/chains";
 
 const localNitro: MUDChain = {
+    id: 12340000,
+    name: "shard",
+    nativeCurrency: {
+        decimals: 18,
+        name: "Shard",
+        symbol: "AGLD",
+    },
+    rpcUrls: {
+        default: {
+            http: ["http://127.0.0.1:8587"],
+            webSocket: ["ws://127.0.0.1:8588"],
+        },
+    }
+};
+const Nitro10: MUDChain = {
     id: 12340213,
     name: "shard",
     nativeCurrency: {
@@ -32,4 +47,4 @@ const localNitro: MUDChain = {
  * See https://mud.dev/guides/hello-world/add-chain-client
  * for instructions on how to add networks.
  */
-export const supportedChains: MUDChain[] = [localNitro, mudFoundry, redstone, garnet];
+export const supportedChains: MUDChain[] = [localNitro,Nitro10, mudFoundry, redstone, garnet];

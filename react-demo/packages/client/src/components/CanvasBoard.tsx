@@ -103,17 +103,15 @@ export interface ICanvasBoard {
 const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const {
     network : { playerEntity },
-    components: { Counter },
+    components: { Counter,Position},
     systemCalls: {
-      getScore, stGame, endGame, move, increment,getPositionData
+      stGame, endGame, move, increment,
     },
   } = useMUD();
 
   const counter = useComponentValue(Counter, playerEntity);
+  const position = useComponentValue(Position, playerEntity);
 
-  // (async () => {
-  //   console.log("getPositionData:",await getPositionData())
-  // })()
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const cancelRef = React.useRef()
@@ -123,6 +121,7 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   const disallowedDirection = useSelector(
     (state: IGlobalState) => state.disallowedDirection
   );
+  dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
 
   const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [pos, setPos] = useState<IObjectBody>(
@@ -190,10 +189,7 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
           event.key === "d"
         ) {
 
-          (async () => {
-            console.log("stGame:", await stGame())
-            console.log("getPositionData:",await getPositionData())
-          })()
+          stGame()
           // if (!account) {
           //   onOpen()
           //   return
@@ -234,13 +230,8 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
   }, [context, dispatch, handleKeyEvents, height, snake1, width]);
 
   useEffect(() => {
-    dispatch({type: MAX_SCORE, payload: (counter?.maxScore ?? 0)});
     //Generate new object
     if (isConsumed) {
-      (async () => {
-        console.log("increment(): ", await increment())
-      })()
-
       const posi = generateRandomPosition(width - 20, height - 20);
       setPos(posi);
       setIsConsumed(false);
@@ -263,6 +254,8 @@ const CanvasBoard = ({ height, width }: ICanvasBoard) => {
 
     //When the object is consumed
     if (!isConsumed && snake1[0].x === pos?.x && snake1[0].y === pos?.y) {
+      console.log("getPositionData:",position)
+      increment()
       setIsConsumed(true);
     }
 

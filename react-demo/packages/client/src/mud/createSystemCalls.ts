@@ -31,7 +31,7 @@ export function createSystemCalls(
    *   (https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
    */
   { worldContract, waitForTransaction }: SetupNetworkResult,
-  { 
+  {
     Counter,
     Position,
     Balance,
@@ -43,7 +43,6 @@ export function createSystemCalls(
   const increment = async () => {
     const tx = await worldContract.write.increment();
     await waitForTransaction(tx);
-    return await getScore();
   };
   const getPlayerBalance = async () => {
     return await worldContract.read.getCurrentBalance()
@@ -51,7 +50,6 @@ export function createSystemCalls(
   const rechargeGameBalance = async () => {
     const tx = await worldContract.write.startGame();
     await waitForTransaction(tx);
-    return await getScore();
   };
   const payForGame = async () => {
     const tx = await worldContract.write.payForGame();
