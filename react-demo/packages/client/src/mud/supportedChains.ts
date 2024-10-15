@@ -39,7 +39,7 @@ const Nitro10: MUDChain = {
     rpcUrls: {
         default: {
             http: ["http://test-game.xuyanzu.com/shard"],
-            webSocket: ["ws://test-game.xuyanzu.com/shard"],
+            webSocket: ["http://test-game.xuyanzu.com/shard"],
         },
     }
 };
