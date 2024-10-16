@@ -39,7 +39,7 @@ const gameReducer = (state = globalState, action: any) => {
     case UP:
     case DOWN: {
       // let newSnake = [...state.snake];
-      let newSnake = [...state.snake.slice(0, 3)];
+      let newSnake = [...state.snake];
       newSnake = [{
         x: state.snake[0].x + action.payload[0],
         y: state.snake[0].y + action.payload[1],

@@ -21,7 +21,7 @@ extra_output_files = [
   "evm.bytecode"
 ]
 fs_permissions = [{ access = "read", path = "./"}]
-eth_rpc_url = "https://test-game.xuyanzu.com/shard"
+eth_rpc_url = "https://snake-demo.adventurelayer.xyz/shard"
 
 [profile.garnet]
 eth_rpc_url = "https://rpc.garnetchain.com"

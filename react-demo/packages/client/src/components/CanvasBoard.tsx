@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ethers } from "ethers";
 import {
   AlertDialog,
   AlertDialogBody,
