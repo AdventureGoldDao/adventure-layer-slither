@@ -6,54 +6,17 @@ import { App } from "./App";
 import { setup } from "./mud/setup";
 import { MUDProvider } from "./MUDContext";
 import mudConfig from "contracts/mud.config";
-import { Provider } from "react-redux";
-import store from "./store";
-
-import {
-  ChakraProvider,
-  extendTheme,
-} from "@chakra-ui/react";
-
+import "./index.css";
 
 const rootElement = document.getElementById("react-root");
 if (!rootElement) throw new Error("React root not found");
 const root = ReactDOM.createRoot(rootElement);
 
-const theme = extendTheme({
-  styles: {
-    global: {
-      body: {
-        bg: "black",
-        color: "white",
-        fontFamily: "'Courier New', monospace",
-      },
-    },
-  },
-  components: {
-    Button: {
-      baseStyle: {
-        _focus: { boxShadow: "none" },
-        _hover: { bg: "gray.700" },
-      },
-    },
-    Kbd: {
-      baseStyle: {
-        color: "#666",
-      },
-    },
-  },
-});
-
-// TODO: figure out if we actually want this to be async or if we should render something else in the meantime
 setup().then(async (result) => {
   root.render(
-    <Provider store={store}>
-      <ChakraProvider theme={theme}>
-        <MUDProvider value={result}>
-          <App />
-        </MUDProvider>
-      </ChakraProvider>
-    </Provider>
+    <MUDProvider value={result}>
+      <App />
+    </MUDProvider>
   );
 
   // https://vitejs.dev/guide/env-and-mode.html

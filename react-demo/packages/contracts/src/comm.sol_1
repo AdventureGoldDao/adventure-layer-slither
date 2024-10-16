@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.24;
+
+function createGameCode() private view returns (string memory) {
+  bytes memory gameCode = new bytes(6);
+  for (uint i = 0; i < 6; i++) {
+    gameCode[i] = bytes1(uint8(65 + uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty, i))) % 26));
+  }
+  return string(gameCode);
+}
+
+uint constant MAX_ORB_COUNT = 150;
+int constant MAP_MIN_COORDINATE = -1400;
+int constant MAP_MAX_COORDINATE = 1400;
+
+  struct Orb {
+    Position position;
+    OrbSize size;
+    string color;
+  }
+
+  struct Position {
+    int x;
+    int y;
+  }
+
+  enum OrbSize { SMALL, LARGE }
+
+  function round(int value) private pure returns (int) {
+    return value / 100 * 100; // Simplified rounding to nearest int
+  }
+
+  function generateOrbs(Orb[] storage orbs, uint numDeathOrbs) public {
+    uint size = orbs.length;
+    for (uint i = 0; i < MAX_ORB_COUNT - size + numDeathOrbs; i++) {
+      Position memory pos = Position(
+        round(randomCoordinate(MAP_MIN_COORDINATE, MAP_MAX_COORDINATE)),
+        round(randomCoordinate(MAP_MIN_COORDINATE, MAP_MAX_COORDINATE))
+      );
+      orbs.push(Orb(pos, generateOrbSize(), generateColor()));
+    }
+  }
+
+  function randomCoordinate(int min, int max) private view returns (int) {
+    return int(uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty))) % (max - min + 1)) + min;
+  }
+
+  function generateOrbSize() private view returns (OrbSize) {
+    uint randomVal = uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty))) % 100;
+    return randomVal <= 75 ? OrbSize.SMALL : OrbSize.LARGE;
+  }
+
+  function generateColor() private view returns (string memory) {
+    bytes32 randomBytes = keccak256(abi.encodePacked(block.timestamp, block.difficulty));
+    bytes memory hexColor = new bytes(6);
+    for (uint i = 0; i < 6; i++) {
+      hexColor[i] = bytes1(uint8(48 + uint8(randomBytes[i]) % 16)); // Generate a random hex character
+    }
+    return string(hexColor);
+  }
