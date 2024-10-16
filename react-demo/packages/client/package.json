@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "wait-port https://snake-demo.adventurelayer.xyz/shard && vite",
+    "dev": "wait-port 127.0.0.1:8587 && vite",
     "preview": "vite preview",
     "test": "tsc --noEmit"
   },
