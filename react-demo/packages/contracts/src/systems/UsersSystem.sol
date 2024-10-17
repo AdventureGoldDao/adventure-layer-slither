@@ -11,50 +11,33 @@ contract UsersSystem is System {
   }
 
   function stGame(string memory name) public {
-    bytes6 gameCode = generateRandomBytes6();
+    uint32 gameCode = uint32(generateRandom() % 10000);
     Users.setGameCode(msg.sender,gameCode);
     Users.setUsername(msg.sender,name);
     addUser(gameCode);
   }
 
-  function addUser(bytes6 gameCode) public {
-    if (!gameStateExists(gameCode)) {
+  function addUser(uint32 gameCode) public {
+    if (!gameStateExists(gameCode,false)) {
       GameCodeToGameState.pushPlayers(gameCode,msg.sender);
     }
   }
 
-  function removeUser(bytes6 gameCode) public {
+  function gameStateExists(uint32 gameCode,bool remove) public returns (bool) {
     address[] memory players = GameCodeToGameState.getPlayers(gameCode);
-    for (uint256 i = 0; i < players.length; i++) {
+    for (uint32 i = 0; i < players.length; i++) {
       if (players[i] == msg.sender) {
-        players[i] = players[0];
-        GameCodeToGameState.popPlayers(gameCode);
-        break;
-      }
-    }
-  }
-
-  function gameStateExists(bytes6 gameCode) internal view returns (bool) {
-    address[] memory players = GameCodeToGameState.getPlayers(gameCode);
-    for (uint256 i = 0; i < players.length; i++) {
-      if (players[i] == msg.sender) {
+        if (remove){
+          GameCodeToGameState.updatePlayers(gameCode,uint256(i),GameCodeToGameState.getItemPlayers(gameCode,0));
+          GameCodeToGameState.popPlayers(gameCode);
+        }
         return true;
       }
     }
     return false;
   }
 
-  function generateRandomBytes6() public view returns (bytes6) {
-    bytes memory alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    bytes memory randomBytes = new bytes(6);
-    for (uint256 i = 0; i < 6; i++) {
-      uint256 randomIndex = uint256(
-        keccak256(
-          abi.encodePacked(block.timestamp, block.prevrandao, msg.sender, i)
-        )
-      ) % alphabet.length;
-      randomBytes[i] = alphabet[randomIndex];
-    }
-    return bytes6(randomBytes);
+  function generateRandom() public view returns (uint256) {
+    return uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender)));
   }
 }

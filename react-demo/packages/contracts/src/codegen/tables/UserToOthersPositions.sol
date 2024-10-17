@@ -23,8 +23,8 @@ library UserToOthersPositions {
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0000000100000000000000000000000000000000000000000000000000000000);
 
-  // Hex-encoded key schema of (bytes6)
-  Schema constant _keySchema = Schema.wrap(0x0006010045000000000000000000000000000000000000000000000000000000);
+  // Hex-encoded key schema of (uint32)
+  Schema constant _keySchema = Schema.wrap(0x0004010003000000000000000000000000000000000000000000000000000000);
   // Hex-encoded value schema of (bytes32[])
   Schema constant _valueSchema = Schema.wrap(0x00000001c1000000000000000000000000000000000000000000000000000000);
 
@@ -63,9 +63,9 @@ library UserToOthersPositions {
   /**
    * @notice Get snakes.
    */
-  function getSnakes(bytes6 gameCode) internal view returns (bytes32[] memory snakes) {
+  function getSnakes(uint32 gameCode) internal view returns (bytes32[] memory snakes) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
     return (SliceLib.getSubslice(_blob, 0, _blob.length).decodeArray_bytes32());
@@ -74,9 +74,9 @@ library UserToOthersPositions {
   /**
    * @notice Get snakes.
    */
-  function _getSnakes(bytes6 gameCode) internal view returns (bytes32[] memory snakes) {
+  function _getSnakes(uint32 gameCode) internal view returns (bytes32[] memory snakes) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
     return (SliceLib.getSubslice(_blob, 0, _blob.length).decodeArray_bytes32());
@@ -85,9 +85,9 @@ library UserToOthersPositions {
   /**
    * @notice Get snakes.
    */
-  function get(bytes6 gameCode) internal view returns (bytes32[] memory snakes) {
+  function get(uint32 gameCode) internal view returns (bytes32[] memory snakes) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
     return (SliceLib.getSubslice(_blob, 0, _blob.length).decodeArray_bytes32());
@@ -96,9 +96,9 @@ library UserToOthersPositions {
   /**
    * @notice Get snakes.
    */
-  function _get(bytes6 gameCode) internal view returns (bytes32[] memory snakes) {
+  function _get(uint32 gameCode) internal view returns (bytes32[] memory snakes) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
     return (SliceLib.getSubslice(_blob, 0, _blob.length).decodeArray_bytes32());
@@ -107,9 +107,9 @@ library UserToOthersPositions {
   /**
    * @notice Set snakes.
    */
-  function setSnakes(bytes6 gameCode, bytes32[] memory snakes) internal {
+  function setSnakes(uint32 gameCode, bytes32[] memory snakes) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, EncodeArray.encode((snakes)));
   }
@@ -117,9 +117,9 @@ library UserToOthersPositions {
   /**
    * @notice Set snakes.
    */
-  function _setSnakes(bytes6 gameCode, bytes32[] memory snakes) internal {
+  function _setSnakes(uint32 gameCode, bytes32[] memory snakes) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreCore.setDynamicField(_tableId, _keyTuple, 0, EncodeArray.encode((snakes)));
   }
@@ -127,9 +127,9 @@ library UserToOthersPositions {
   /**
    * @notice Set snakes.
    */
-  function set(bytes6 gameCode, bytes32[] memory snakes) internal {
+  function set(uint32 gameCode, bytes32[] memory snakes) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, EncodeArray.encode((snakes)));
   }
@@ -137,9 +137,9 @@ library UserToOthersPositions {
   /**
    * @notice Set snakes.
    */
-  function _set(bytes6 gameCode, bytes32[] memory snakes) internal {
+  function _set(uint32 gameCode, bytes32[] memory snakes) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreCore.setDynamicField(_tableId, _keyTuple, 0, EncodeArray.encode((snakes)));
   }
@@ -147,9 +147,9 @@ library UserToOthersPositions {
   /**
    * @notice Get the length of snakes.
    */
-  function lengthSnakes(bytes6 gameCode) internal view returns (uint256) {
+  function lengthSnakes(uint32 gameCode) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -160,9 +160,9 @@ library UserToOthersPositions {
   /**
    * @notice Get the length of snakes.
    */
-  function _lengthSnakes(bytes6 gameCode) internal view returns (uint256) {
+  function _lengthSnakes(uint32 gameCode) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -173,9 +173,9 @@ library UserToOthersPositions {
   /**
    * @notice Get the length of snakes.
    */
-  function length(bytes6 gameCode) internal view returns (uint256) {
+  function length(uint32 gameCode) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -186,9 +186,9 @@ library UserToOthersPositions {
   /**
    * @notice Get the length of snakes.
    */
-  function _length(bytes6 gameCode) internal view returns (uint256) {
+  function _length(uint32 gameCode) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -200,9 +200,9 @@ library UserToOthersPositions {
    * @notice Get an item of snakes.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemSnakes(bytes6 gameCode, uint256 _index) internal view returns (bytes32) {
+  function getItemSnakes(uint32 gameCode, uint256 _index) internal view returns (bytes32) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 32, (_index + 1) * 32);
@@ -214,9 +214,9 @@ library UserToOthersPositions {
    * @notice Get an item of snakes.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemSnakes(bytes6 gameCode, uint256 _index) internal view returns (bytes32) {
+  function _getItemSnakes(uint32 gameCode, uint256 _index) internal view returns (bytes32) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 32, (_index + 1) * 32);
@@ -228,9 +228,9 @@ library UserToOthersPositions {
    * @notice Get an item of snakes.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItem(bytes6 gameCode, uint256 _index) internal view returns (bytes32) {
+  function getItem(uint32 gameCode, uint256 _index) internal view returns (bytes32) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 32, (_index + 1) * 32);
@@ -242,9 +242,9 @@ library UserToOthersPositions {
    * @notice Get an item of snakes.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItem(bytes6 gameCode, uint256 _index) internal view returns (bytes32) {
+  function _getItem(uint32 gameCode, uint256 _index) internal view returns (bytes32) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 32, (_index + 1) * 32);
@@ -255,9 +255,9 @@ library UserToOthersPositions {
   /**
    * @notice Push an element to snakes.
    */
-  function pushSnakes(bytes6 gameCode, bytes32 _element) internal {
+  function pushSnakes(uint32 gameCode, bytes32 _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, abi.encodePacked((_element)));
   }
@@ -265,9 +265,9 @@ library UserToOthersPositions {
   /**
    * @notice Push an element to snakes.
    */
-  function _pushSnakes(bytes6 gameCode, bytes32 _element) internal {
+  function _pushSnakes(uint32 gameCode, bytes32 _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, abi.encodePacked((_element)));
   }
@@ -275,9 +275,9 @@ library UserToOthersPositions {
   /**
    * @notice Push an element to snakes.
    */
-  function push(bytes6 gameCode, bytes32 _element) internal {
+  function push(uint32 gameCode, bytes32 _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, abi.encodePacked((_element)));
   }
@@ -285,9 +285,9 @@ library UserToOthersPositions {
   /**
    * @notice Push an element to snakes.
    */
-  function _push(bytes6 gameCode, bytes32 _element) internal {
+  function _push(uint32 gameCode, bytes32 _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, abi.encodePacked((_element)));
   }
@@ -295,9 +295,9 @@ library UserToOthersPositions {
   /**
    * @notice Pop an element from snakes.
    */
-  function popSnakes(bytes6 gameCode) internal {
+  function popSnakes(uint32 gameCode) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 32);
   }
@@ -305,9 +305,9 @@ library UserToOthersPositions {
   /**
    * @notice Pop an element from snakes.
    */
-  function _popSnakes(bytes6 gameCode) internal {
+  function _popSnakes(uint32 gameCode) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 32);
   }
@@ -315,9 +315,9 @@ library UserToOthersPositions {
   /**
    * @notice Pop an element from snakes.
    */
-  function pop(bytes6 gameCode) internal {
+  function pop(uint32 gameCode) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 32);
   }
@@ -325,9 +325,9 @@ library UserToOthersPositions {
   /**
    * @notice Pop an element from snakes.
    */
-  function _pop(bytes6 gameCode) internal {
+  function _pop(uint32 gameCode) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 32);
   }
@@ -335,9 +335,9 @@ library UserToOthersPositions {
   /**
    * @notice Update an element of snakes at `_index`.
    */
-  function updateSnakes(bytes6 gameCode, uint256 _index, bytes32 _element) internal {
+  function updateSnakes(uint32 gameCode, uint256 _index, bytes32 _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     unchecked {
       bytes memory _encoded = abi.encodePacked((_element));
@@ -348,9 +348,9 @@ library UserToOthersPositions {
   /**
    * @notice Update an element of snakes at `_index`.
    */
-  function _updateSnakes(bytes6 gameCode, uint256 _index, bytes32 _element) internal {
+  function _updateSnakes(uint32 gameCode, uint256 _index, bytes32 _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     unchecked {
       bytes memory _encoded = abi.encodePacked((_element));
@@ -361,9 +361,9 @@ library UserToOthersPositions {
   /**
    * @notice Update an element of snakes at `_index`.
    */
-  function update(bytes6 gameCode, uint256 _index, bytes32 _element) internal {
+  function update(uint32 gameCode, uint256 _index, bytes32 _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     unchecked {
       bytes memory _encoded = abi.encodePacked((_element));
@@ -374,9 +374,9 @@ library UserToOthersPositions {
   /**
    * @notice Update an element of snakes at `_index`.
    */
-  function _update(bytes6 gameCode, uint256 _index, bytes32 _element) internal {
+  function _update(uint32 gameCode, uint256 _index, bytes32 _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     unchecked {
       bytes memory _encoded = abi.encodePacked((_element));
@@ -387,9 +387,9 @@ library UserToOthersPositions {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(bytes6 gameCode) internal {
+  function deleteRecord(uint32 gameCode) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -397,9 +397,9 @@ library UserToOthersPositions {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(bytes6 gameCode) internal {
+  function _deleteRecord(uint32 gameCode) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -440,9 +440,9 @@ library UserToOthersPositions {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(bytes6 gameCode) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint32 gameCode) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(gameCode);
+    _keyTuple[0] = bytes32(uint256(gameCode));
 
     return _keyTuple;
   }

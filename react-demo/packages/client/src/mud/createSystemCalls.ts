@@ -42,9 +42,16 @@ export function createSystemCalls(
     return getComponentValue(Users, playerEntity);
   };
 
+  const updateGameState = async (gameCode:number) => {
+    const tx = await worldContract.write.updateGameState([gameCode]);
+    await waitForTransaction(tx);
+    return await worldContract.read.getLeaderboardData([gameCode]);
+  };
+
 
   return {
-    stGame
+    stGame,
+    updateGameState
   };
 
 }

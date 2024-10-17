@@ -1,14 +1,11 @@
 import { defineWorld } from "@latticexyz/world";
 
 export default defineWorld({
-  enums: {
-    OrbSize: ["SMALL", "LARGE"],
-  },
   tables: {
     Users: {
       schema: {
         player: "address",
-        gameCode: "bytes6",
+        gameCode: "uint32",
         score: "uint32",
         username: "string",
       },
@@ -16,15 +13,14 @@ export default defineWorld({
     },
     GameCodeToGameState: { //整个游戏的状态
       schema: {
-        gameCode: "bytes6",
+        gameCode: "uint32",
         players: "address[]",
-        orbs: "bytes32[]",
       },
       key: ["gameCode"],
     },
     UserToOthersPositions:{ //将每个用户映射到其他玩家的蛇身部位的位置集合
       schema: {
-        gameCode: "bytes6",
+        gameCode: "uint32",
         snakes: "bytes32[]",
       },
       key: ["gameCode"]

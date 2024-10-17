@@ -15,9 +15,9 @@ interface IUsersSystem {
 
   function stGame(string memory name) external;
 
-  function addUser(bytes6 gameCode) external;
+  function addUser(uint32 gameCode) external;
 
-  function removeUser(bytes6 gameCode) external;
+  function gameStateExists(uint32 gameCode, bool remove) external returns (bool);
 
-  function generateRandomBytes6() external view returns (bytes6);
+  function generateRandom() external view returns (uint256);
 }

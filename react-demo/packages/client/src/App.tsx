@@ -205,6 +205,7 @@ export function registerSocket(
       // updating the set of orbs for the client's game
       case MessageType.SEND_ORBS: {
         orbSet = message.data.orbSet;
+        console.log("orbSet:",orbSet)
         gameState.orbs = orbSet;
         setGameState(gameState);
         break;
