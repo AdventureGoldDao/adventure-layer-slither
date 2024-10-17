@@ -7,6 +7,9 @@ import GameState from "../game/GameState";
 import { OrbData } from "../game/orb/Orb";
 import HowToPlay from "./HowToPlay";
 
+import { useMUD } from "../MUDContext";
+import { useComponentValue } from "@latticexyz/react";
+
 /**
  * Interface representing data for an HTML input that updates metadata based
  * on text editing and has some functionality on keys pressed.
@@ -100,6 +103,16 @@ export default function Home({
   setGameState,
   orbSet,
 }: HomeProps): JSX.Element {
+  const {
+    network: {playerEntity},
+    components: {Users},
+    systemCalls: {
+      stGame,
+    },
+  } = useMUD();
+  const uData = useComponentValue(Users, playerEntity);
+  console.log("uData:", uData)
+
   const [username, setUsername] = useState("");
   const [inputGamecode, setInputGamecode] = useState("");
   const [errorText, setErrorText] = useState("");
@@ -111,7 +124,9 @@ export default function Home({
       setErrorText("Your username should be non-empty!");
       return;
     }
+    doSol();
     setErrorText("");
+
     try {
       registerSocket(
         setScores,
@@ -129,6 +144,24 @@ export default function Home({
       setErrorText("Error: Could not connect to server!");
     }
   };
+
+  const doSol = async () => {
+    const r = await stGame(username)
+    console.log("adduser success:", r)
+    let code = r?.gameCode ?? inputGamecode
+    if (code) {
+      // setGameCode(code);
+      // setGameStarted(true)
+
+
+
+    } else {
+      setGameStarted(false)
+      setErrorText("Error: Failed to join the game!");
+    }
+  }
+
+
 
   // registers the client's websocket to handle joining a game with a code
   const startGameWithCode = (): void => {

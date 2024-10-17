@@ -8,9 +8,9 @@ export default defineWorld({
     Users: {
       schema: {
         player: "address",
-        username: "bytes32",
-        gameCode: "bytes32",
+        gameCode: "bytes6",
         score: "uint32",
+        username: "string",
       },
       key: ["player"],
     },
@@ -18,8 +18,7 @@ export default defineWorld({
       schema: {
         gameCode: "bytes6",
         players: "address[]",
-        leaderboard: "uint32[]",
-        orbs: "bytes32[]", //房间里的所有星星 [{position:{x:1,y:2},color:"",orbSize:""}]
+        orbs: "bytes32[]",
       },
       key: ["gameCode"],
     },

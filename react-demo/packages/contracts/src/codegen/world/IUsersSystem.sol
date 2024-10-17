@@ -11,7 +11,13 @@ import { UsersData } from "../index.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IUsersSystem {
-  function getData() external view returns (UsersData memory c);
+  function getData() external view returns (UsersData memory);
 
-  function setUsername(bytes32 name) external;
+  function stGame(string memory name) external;
+
+  function addUser(bytes6 gameCode) external;
+
+  function removeUser(bytes6 gameCode) external;
+
+  function generateRandomBytes6() external view returns (bytes6);
 }

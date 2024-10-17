@@ -21,12 +21,15 @@ import {
   UpdatePositionMessage,
 } from "./message/message";
 
+import { useMUD } from "./MUDContext";
+import { useComponentValue } from "@latticexyz/react";
 /**
  * Creates and returns the overarching HTML element representing the Slither+
  * app at any given moment, appropriately either the home or in-game screen
  * @returns the overarching HTML SLither+ app element
  */
 export default function App(): JSX.Element {
+
   const [gameStarted, setGameStarted] = useState(false);
   const [scores, setScores] = useState(new Map<string, number>());
   const [gameCode, setGameCode] = useState("");
@@ -51,6 +54,7 @@ export default function App(): JSX.Element {
     scores: new Map(),
     gameCode: "abc",
   });
+
 
   return (
     <div className="App">
@@ -115,11 +119,32 @@ export function registerSocket(
   hasGameCode: boolean,
   gameCode: string = ""
 ) {
+  const {
+    network : { playerEntity },
+    components: { Users },
+    systemCalls: {
+      stGame,
+    },
+  } = useMUD();
+  const uData = useComponentValue(Users, playerEntity);
+  console.log("uData:",uData)
+  stGame(username).then((r) => {
+    console.log("adduser success:", r)
+    gameCode = r?.gameCode ?? gameCode
+    if (gameCode){
+      setGameCode(gameCode);
+      setGameStarted(true)
+    }else{
+      setGameStarted(false)
+      setErrorText("Error: Failed to join the game!");
+    }
+  }).catch((e) => {
+    setGameStarted(false)
+    setErrorText("Error: Failed to join the game!");
+  })
+  console.log("1111111111111111")
   // running game on localhost
   socket = new WebSocket(AppConfig.PROTOCOL + AppConfig.HOST + AppConfig.PORT);
-
-  // running game on ngrok
-  // socket = new WebSocket(AppConfig.PROTOCOL + AppConfig.HOST);
 
   socket.onopen = () => {
     console.log("client: A new client-side socket was opened!");
@@ -167,7 +192,7 @@ export function registerSocket(
       case MessageType.YOU_DIED: {
         // currently just reloading to force the home screen to open
         // see if we want to do anything else here
-        window.location.reload();
+        // window.location.reload();
         break;
       }
 
@@ -194,12 +219,12 @@ export function registerSocket(
       }
 
       // setting the client's game code
-      case MessageType.SET_GAME_CODE: {
-        console.log("gc");
-        console.log(message.data.gameCode);
-        setGameCode(message.data.gameCode);
-        break;
-      }
+      // case MessageType.SET_GAME_CODE: {
+      //   console.log("gc");
+      //   console.log(message.data.gameCode);
+      //   setGameCode(message.data.gameCode);
+      //   break;
+      // }
 
       // updating the set of orbs for the client's game
       case MessageType.SEND_ORBS: {
@@ -234,6 +259,9 @@ export function registerSocket(
         });
         setGameState(newGameState);
         break;
+      }
+      default : {
+        console.log("default message:",message)
       }
     }
   };

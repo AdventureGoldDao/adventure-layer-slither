@@ -30,60 +30,21 @@ export function createSystemCalls(
    *   syncToRecs
    *   (https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
    */
-  { worldContract, waitForTransaction }: SetupNetworkResult,
+  { worldContract, waitForTransaction,playerEntity }: SetupNetworkResult,
   {
-    Counter,
-    Position,
+    Users,
     Balance,
   }: ClientComponents,
 ) {
-  const getScore = async () => {
-    return await worldContract.read.getScore();
-  };
-  const increment = async () => {
-    const tx = await worldContract.write.increment();
+  const stGame = async (name:string) => {
+    const tx = await worldContract.write.stGame([name]);
     await waitForTransaction(tx);
-  };
-  const getPlayerBalance = async () => {
-    return await worldContract.read.getCurrentBalance()
-  };
-  const rechargeGameBalance = async () => {
-    const tx = await worldContract.write.startGame();
-    await waitForTransaction(tx);
-  };
-  const payForGame = async () => {
-    const tx = await worldContract.write.payForGame();
-    await waitForTransaction(tx);
-    return getComponentValue(Counter, singletonEntity);
-  };
-  const stGame = async () => {
-    const tx = await worldContract.write.stGame();
-    await waitForTransaction(tx);
-  };
-  const endGame = async () => {
-    const tx = await worldContract.write.endGame();
-    await waitForTransaction(tx);
+    return getComponentValue(Users, playerEntity);
   };
 
-  const move = async (direction: number) => {
-    const tx = await worldContract.write.move([direction]);
-    await waitForTransaction(tx);
-  };
-
-  const getPositionData = async () => {
-    return await worldContract.read.getPositionData()
-  };
 
   return {
-    move,
-    getScore,
-    increment,
-    stGame,
-    endGame,
-    getPlayerBalance,
-    rechargeGameBalance,
-    payForGame,
-    getPositionData,
+    stGame
   };
 
 }

@@ -1,40 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import {GameCodeToGameState, GameCodeToGameStateData} from "../codegen/index.sol";
+import {Users, UsersData, GameCodeToGameState} from "../codegen/index.sol";
 import {System} from "@latticexyz/world/src/System.sol";
-
+import {MAX_ORB_COUNT, Orb,Position,randomCoordinate,generateOrbSize,generateColor} from "../orb.sol";
 contract GameCodeToGameStateSystem is System {
 
-  function getLeaderboardData(bytes6 gameCode) internal view returns (GameCodeToGameStateData memory) {
-    return GameCodeToGameState.get(gameCode);
+  struct GameStateData {
+    UsersData[] leaderboard;
+    Orb[] orbs;
   }
 
-  function addUser(bytes6 gameCode) public {
-    if (!exists(gameCode)) {
-      GameCodeToGameState.pushPlayers(gameCode,msg.sender);
+  function getLeaderboardData(bytes6 gameCode) internal view returns (GameStateData memory _d) {
+    address[] memory _players = GameCodeToGameState.getPlayers(gameCode);
+    _d.leaderboard = new UsersData[];
+    for (uint256 i = 0; i < _players.length; i++) {
+       _d.leaderboard[i] = Users.get(_players[i]);
     }
   }
 
-  function removeUser(bytes6 gameCode) public {
-    address[] memory players = GameCodeToGameState.getPlayers(gameCode);
-    for (uint256 i = 0; i < players.length; i++) {
-      if (players[i] == msg.sender) {
-        players[i] = players[0];
-        GameCodeToGameState.popPlayers(gameCode);
-        break;
-      }
+  function generateOrbs(bytes6 gameCode) public {
+    for (uint i = 0; i < MAX_ORB_COUNT - uint(GameCodeToGameState.lengthOrbs); i++) {
+      Position memory pos = Position(randomCoordinate(),randomCoordinate());
+      GameCodeToGameState.pushOrbs(gameCode, bytes32(Orb(pos, generateOrbSize(), generateColor())));
     }
-  }
-
-  function exists(bytes6 gameCode) internal view returns (bool) {
-    address[] memory players = GameCodeToGameState.getPlayers(gameCode);
-    for (uint256 i = 0; i < players.length; i++) {
-      if (players[i] == msg.sender) {
-        return true;
-      }
-    }
-    return false;
   }
 
 }
