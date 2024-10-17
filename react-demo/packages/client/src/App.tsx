@@ -86,7 +86,7 @@ export default function App(): JSX.Element {
 /** Metadata for forming the URL to connect with the server websocket */
 const AppConfig = {
   PROTOCOL: "ws:",
-  HOST: "//localhost",
+  HOST: "//34.228.184.10",
   PORT: ":8511",
 };
 
@@ -119,30 +119,6 @@ export function registerSocket(
   hasGameCode: boolean,
   gameCode: string = ""
 ) {
-  const {
-    network : { playerEntity },
-    components: { Users },
-    systemCalls: {
-      stGame,
-    },
-  } = useMUD();
-  const uData = useComponentValue(Users, playerEntity);
-  console.log("uData:",uData)
-  stGame(username).then((r) => {
-    console.log("adduser success:", r)
-    gameCode = r?.gameCode ?? gameCode
-    if (gameCode){
-      setGameCode(gameCode);
-      setGameStarted(true)
-    }else{
-      setGameStarted(false)
-      setErrorText("Error: Failed to join the game!");
-    }
-  }).catch((e) => {
-    setGameStarted(false)
-    setErrorText("Error: Failed to join the game!");
-  })
-  console.log("1111111111111111")
   // running game on localhost
   socket = new WebSocket(AppConfig.PROTOCOL + AppConfig.HOST + AppConfig.PORT);
 
@@ -192,7 +168,7 @@ export function registerSocket(
       case MessageType.YOU_DIED: {
         // currently just reloading to force the home screen to open
         // see if we want to do anything else here
-        // window.location.reload();
+        window.location.reload();
         break;
       }
 
