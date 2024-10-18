@@ -2,7 +2,7 @@
 pragma solidity >=0.8.24;
 
 import {System} from "@latticexyz/world/src/System.sol";
-import {Users, GameCodeToGameState} from "../codegen/index.sol";
+import {Users, UsersData, GameCodeToGameState} from "../codegen/index.sol";
 import {OrbSize} from "../codegen/common.sol";
 import {Position,Orb,GameState} from "../common.sol";
 
@@ -10,18 +10,8 @@ contract GameStateSystem is System {
   uint constant MAX_ORB_COUNT = 150;
   uint256 constant MAP_COORDINATE = 140000;
 
-  string[] colors = [
-      "#ff0000",
-      "#24f51e",
-      "#221fdc",
-      "#811fdc",
-      "#1fd9dc",
-      "#ff6d00",
-      "#fdff00",
-      "#ff00b2"
-  ];
-
   mapping(uint32 => GameState) private gameStateData;
+
 
   function getLeaderboardData(uint32 gameCode) public view returns (GameState memory) {
     return gameStateData[gameCode];
@@ -33,34 +23,42 @@ contract GameStateSystem is System {
 
   function updateGameState(uint32 gameCode) public {
     address[] memory _players = GameCodeToGameState.getPlayers(gameCode);
-    for (uint256 i = 0; i <= _players.length; i++) {
-      gameStateData[gameCode].leaderboard[i] = Users.get(_players[i]);
+    if (gameStateData[gameCode].leaderboard.length > 0) {
+      delete gameStateData[gameCode].leaderboard;
+    }
+    for (uint256 i = 0; i < _players.length; i++) {
+      address player = _players[i];
+      require(player != address(0), "Invalid player address");
+      gameStateData[gameCode].leaderboard.push(Users.get(player));
     }
     uint256 len = gameStateData[gameCode].orbs.length;
-    for (uint256 i = 0; i <= MAX_ORB_COUNT - len; i++) {
+    for (uint256 i = 0; i < MAX_ORB_COUNT - len; i++) {
+      int idx = int(i + len);
       gameStateData[gameCode].orbs.push(
         Orb(
-          Position(randomCoordinate(i), randomCoordinate(i)),
-          generateOrbSize(i), generateColor(i)));
+          Position(randomCoordinate(idx), randomCoordinate(idx + 3)),
+          generateOrbSize(idx), generateColor(idx)
+        )
+      );
     }
   }
 
-  function generateColor(uint256 i) public view returns (string memory) {
-    uint256 idx = (uint256(keccak256(abi.encodePacked(block.timestamp,i,block.prevrandao)))) % colors.length;
-    return colors[idx];
+  function generateColor(int i) public view returns (string memory) {
+    string[8] memory colors = ["#ff0000","#24f51e","#221fdc","#811fdc","#1fd9dc","#ff6d00","#fdff00","#ff00b2"];
+    return colors[generateRandom(i) % 8];
   }
 
-  function randomCoordinate(uint256 i) public view returns (int) {
-    uint256 randomHash = uint256(keccak256(abi.encodePacked(block.timestamp,i,block.prevrandao)));
-    uint256 randomWithinRange = randomHash % (MAP_COORDINATE * 2 + 1);
-    int256 randomResult = int256(randomWithinRange - MAP_COORDINATE);
-    return randomResult;
+  function randomCoordinate(int i) public view returns (int) {
+    return int(generateRandom(i) % 280001) - 140000;
   }
 
-  function generateOrbSize(uint256 i) public view returns (string memory) {
-    uint randomVal = (uint256(keccak256(abi.encodePacked(block.timestamp,i,block.prevrandao)))) % 100;
+  function generateOrbSize(int i) public view returns (string memory) {
+    uint randomVal = generateRandom(i) % 100;
     return randomVal <= 75 ? "SMALL" : "LARGE";
   }
 
+  function generateRandom(int i) public view returns (uint256) {
+    return uint256(keccak256(abi.encodePacked(block.timestamp,i + 54321, msg.sender)));
+  }
 
 }

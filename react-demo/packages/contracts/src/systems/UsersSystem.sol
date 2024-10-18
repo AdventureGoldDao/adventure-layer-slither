@@ -18,23 +18,23 @@ contract UsersSystem is System {
   }
 
   function addUser(uint32 gameCode) public {
-    if (!gameStateExists(gameCode,false)) {
+    if (gameStateExistsAndRemove(gameCode,false)) {
       GameCodeToGameState.pushPlayers(gameCode,msg.sender);
     }
   }
 
-  function gameStateExists(uint32 gameCode,bool remove) public returns (bool) {
+  function gameStateExistsAndRemove(uint32 gameCode,bool remove) public returns (bool) {
     address[] memory players = GameCodeToGameState.getPlayers(gameCode);
-    for (uint32 i = 0; i < players.length; i++) {
+    for (uint256 i = 0; i < players.length; i++) {
       if (players[i] == msg.sender) {
         if (remove){
           GameCodeToGameState.updatePlayers(gameCode,uint256(i),GameCodeToGameState.getItemPlayers(gameCode,0));
           GameCodeToGameState.popPlayers(gameCode);
         }
-        return true;
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
   function generateRandom() public view returns (uint256) {

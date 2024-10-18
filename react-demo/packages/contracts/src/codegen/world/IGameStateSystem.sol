@@ -17,9 +17,11 @@ interface IGameStateSystem {
 
   function updateGameState(uint32 gameCode) external;
 
-  function generateColor(uint256 i) external view returns (string memory);
+  function generateColor(int i) external view returns (string memory);
 
-  function randomCoordinate(uint256 i) external view returns (int);
+  function randomCoordinate(int i) external view returns (int);
 
-  function generateOrbSize(uint256 i) external view returns (string memory);
+  function generateOrbSize(int i) external view returns (string memory);
+
+  function generateRandom(int i) external view returns (uint256);
 }

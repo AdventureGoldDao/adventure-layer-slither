@@ -177,8 +177,8 @@ export function registerSocket(
         const otherUserDiedMessage: OtherUserDiedMessage = message;
         const removePositions: Position[] =
           otherUserDiedMessage.data.removePositions;
-        console.log("removePositions");
-        console.log(removePositions);
+        // console.log("removePositions");
+        // console.log(removePositions);
         const newGameState: GameState = { ...gameState };
         removePositions.forEach((position: Position) => {
           newGameState.otherBodies.delete(JSON.stringify(position));
@@ -205,7 +205,7 @@ export function registerSocket(
       // updating the set of orbs for the client's game
       case MessageType.SEND_ORBS: {
         orbSet = message.data.orbSet;
-        console.log("orbSet:",orbSet)
+        // console.log("orbSet:",orbSet)
         gameState.orbs = orbSet;
         setGameState(gameState);
         break;

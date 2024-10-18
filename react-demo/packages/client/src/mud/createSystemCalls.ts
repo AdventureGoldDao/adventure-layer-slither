@@ -48,9 +48,16 @@ export function createSystemCalls(
     return await worldContract.read.getLeaderboardData([gameCode]);
   };
 
+  const testGame = async (gameCode:number) => {
+    // const tx = await worldContract.write.generateColor([gameCode]);
+    // await waitForTransaction(tx);
+    return await worldContract.read.randomCoordinate([gameCode]);
+  };
+
 
   return {
     stGame,
+    testGame,
     updateGameState
   };
 

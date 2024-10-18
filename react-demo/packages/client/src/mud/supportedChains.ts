@@ -14,7 +14,7 @@
 import { MUDChain, mudFoundry, redstone, garnet } from "@latticexyz/common/chains";
 
 const localNitro: MUDChain = {
-    id: 12340257,
+    id: 12340258,
     name: "shard",
     nativeCurrency: {
         decimals: 18,

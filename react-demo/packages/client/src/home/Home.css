@@ -13,11 +13,11 @@
   background-color: black;
   color: white;
   height: 100%;
-  width: 60%;
+  width: 80%;
   position: fixed;
   text-align: center;
   font-family: monospace;
-  /*padding: 10% 20% 5%;*/
+  padding: 10% 10% 5%;
 }
 
 .how-to-play-button {

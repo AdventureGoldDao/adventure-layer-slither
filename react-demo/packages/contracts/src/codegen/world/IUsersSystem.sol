@@ -17,7 +17,7 @@ interface IUsersSystem {
 
   function addUser(uint32 gameCode) external;
 
-  function gameStateExists(uint32 gameCode, bool remove) external returns (bool);
+  function gameStateExistsAndRemove(uint32 gameCode, bool remove) external returns (bool);
 
   function generateRandom() external view returns (uint256);
 }
