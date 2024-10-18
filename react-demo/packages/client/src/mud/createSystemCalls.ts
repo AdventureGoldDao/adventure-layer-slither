@@ -48,16 +48,20 @@ export function createSystemCalls(
     return await worldContract.read.getLeaderboardData([gameCode]);
   };
 
-  const testGame = async (gameCode:number) => {
-    // const tx = await worldContract.write.generateColor([gameCode]);
-    // await waitForTransaction(tx);
-    return await worldContract.read.randomCoordinate([gameCode]);
+  const getSnakeBody = async () => {
+    return await worldContract.read.getSnakeBody();
+  };
+
+  const moveSnake = async (x:number,y:number) => {
+    const tx = await worldContract.write.moveSnake([x,y]);
+    await waitForTransaction(tx);
+    return await getSnakeBody();
   };
 
 
   return {
     stGame,
-    testGame,
+    moveSnake,
     updateGameState
   };
 

@@ -107,7 +107,7 @@ export default function Home({
     network: {playerEntity},
     components: {Users},
     systemCalls: {
-      stGame,updateGameState, testGame
+      stGame,updateGameState, moveSnake
     },
   } = useMUD();
   const uData = useComponentValue(Users, playerEntity);
@@ -148,12 +148,14 @@ export default function Home({
   const doSol = async () => {
     const r = await stGame(username)
     console.log("adduser success:", r)
-    let code = r?.gameCode ?? "1234"
+    let code = r?.gameCode ?? 1234
     if (code) {
       setGameCode(code+"");
       // setGameStarted(true)
       const gameState = await updateGameState(code);
       console.log("gameState: ",gameState)
+      console.log("moveSnake: ",await moveSnake(145,657))
+      // console.log("moveSnake: ",await moveSnake(578,654))
 
       // gameState.orbs = gameState.orbs ?? [];
       // setGameState(gameState);
