@@ -30,10 +30,11 @@ export function createSystemCalls(
    *   syncToRecs
    *   (https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
    */
-  { worldContract, waitForTransaction,playerEntity }: SetupNetworkResult,
+  { worldContract, waitForTransaction, playerEntity }: SetupNetworkResult,
   {
     Users,
     Balance,
+    UserAccountMapping,
   }: ClientComponents,
 ) {
   const stGame = async (name:string) => {
@@ -58,11 +59,22 @@ export function createSystemCalls(
     return await getSnakeBody();
   };
 
+  const getBindAccount = async () => {
+    return await worldContract.read.getBindAccount();
+  };
+
+  const setBindAccount = async (pk: string) => {
+    const tx = await worldContract.write.setBindAccount([pk]);
+    await waitForTransaction(tx);
+    return getComponentValue(UserAccountMapping, playerEntity);
+  };
 
   return {
     stGame,
     moveSnake,
-    updateGameState
+    updateGameState,
+    getBindAccount,
+    setBindAccount,
   };
 
 }

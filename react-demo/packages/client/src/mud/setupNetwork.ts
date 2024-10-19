@@ -36,7 +36,7 @@ import mudConfig from "contracts/mud.config";
 
 export type SetupNetworkResult = Awaited<ReturnType<typeof setupNetwork>>;
 
-export async function setupNetwork(walletAddress: string | null) {
+export async function setupNetwork(mode = 'default') {
   const networkConfig = await getNetworkConfig();
 
   /*
@@ -49,6 +49,9 @@ export async function setupNetwork(walletAddress: string | null) {
     // transport: custom(window.ethereum),  // 使用浏览器提供的 Ethereum 对象
     pollingInterval: 1000,
   } as const satisfies ClientConfig;
+  if (mode === 'wallet') {
+    clientOptions.transport = custom(window.ethereum)
+  }
 
   const publicClient = createPublicClient(clientOptions);
 
@@ -72,6 +75,10 @@ export async function setupNetwork(walletAddress: string | null) {
   // if (walletAddress) {
   //   clientAddress = walletAddress
   // }
+  if (mode === 'wallet') {
+    const [account] = await window.ethereum!.request({ method: 'eth_requestAccounts' })
+    clientAddress = account
+  }
   const burnerWalletClient = createWalletClient({
     ...clientOptions,
     // account: accounts[0],
