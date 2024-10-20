@@ -11,5 +11,9 @@ pragma solidity >=0.8.24;
 interface IUserAccountSystem {
   function getBindAccount() external view returns (string memory);
 
+  function getBindAccountBy() external view returns (string memory);
+
+  function getUserBindAccount(address player) external view returns (string memory);
+
   function setBindAccount(string memory account) external;
 }

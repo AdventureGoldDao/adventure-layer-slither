@@ -61,6 +61,24 @@ export function createSystemCalls(
 
   const getBindAccount = async () => {
     return await worldContract.read.getBindAccount();
+    // await waitForTransaction(tx);
+    // return getComponentValue(UserAccountMapping, playerEntity)
+  };
+
+  const getBindAccountBy = async () => {
+    // const tx = await worldContract.write.getBindAccountBy().then((res) => {
+    //   console.log('====>', res);
+    //   return res
+    // });
+    // await waitForTransaction(tx);
+    return getComponentValue(UserAccountMapping, playerEntity)
+  };
+
+  const getUserBindAccount = async (address) => {
+    return await worldContract.read.getUserBindAccount([address]).then((res) => {
+      console.log('====>', res);
+      return res
+    });
   };
 
   const setBindAccount = async (pk: string) => {
@@ -74,6 +92,8 @@ export function createSystemCalls(
     moveSnake,
     updateGameState,
     getBindAccount,
+    getBindAccountBy,
+    getUserBindAccount,
     setBindAccount,
   };
 

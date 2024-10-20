@@ -8,8 +8,17 @@ contract UserAccountSystem is System {
 
     function getBindAccount() public view returns (string memory) {
       address player = msg.sender; // address(_msgSender());
-      string memory account = UserAccountMapping.getAccount(player);
-      return account;
+      return UserAccountMapping.getAccount(player);
+      // return account;
+    }
+
+    function getBindAccountBy() public view returns (string memory) {
+      address player = address(_msgSender());
+      return UserAccountMapping.getAccount(player);
+    }
+
+    function getUserBindAccount(address player) public view returns (string memory) {
+      return UserAccountMapping.get(player);
     }
 
     function setBindAccount(string memory account) public {

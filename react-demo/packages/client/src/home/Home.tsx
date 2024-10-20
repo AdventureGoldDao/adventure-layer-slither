@@ -157,7 +157,6 @@ export default function Home({
     components: {Users},
     systemCalls: {
       stGame,updateGameState, moveSnake,
-      setBindAccount,
     },
   } = useMUD();
   const { setMudContext } = useCustomMUD();
@@ -182,8 +181,18 @@ export default function Home({
     })
 
     getNetworkConfig().then(networkConfig => {
+      // console.log('Private', networkConfig.privateKey)
       setPrivateKey(networkConfig.privateKey);
     })
+
+    // setBindAccount('0xcA64108F6D7117922aD403951fA92b782cD81662').then((res) => {
+    //   console.log('setBindAccount:', res);
+    //   return getBindAccountBy().then(testAccount => {
+    //     console.log('getBindAccount:', testAccount)
+    //     return testAccount
+    //   })
+    // })
+
   }, [])
 
   const connectWallet = async () => {
@@ -216,7 +225,10 @@ export default function Home({
       }
 
       try {
-        const bindAccount = await setupResult.systemCalls.getBindAccount()
+        // const accountResult = await setupResult.systemCalls.getBindAccountBy()
+        // console.log('BindAccount:', accountResult)
+        // const bindAccount = accountResult ? accountResult.account : ''
+        const bindAccount = await setupResult.systemCalls.getUserBindAccount(account)
         console.log('BindAccount:', bindAccount)
 
         if (bindAccount && bindAccount !== privateKey) {
@@ -253,7 +265,6 @@ export default function Home({
     const address = await connectWallet();
     setAccount(address);
     // }
-    console.log('============================>')
 
     doSol();
     setErrorText("");
