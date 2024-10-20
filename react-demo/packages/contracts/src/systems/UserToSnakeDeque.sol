@@ -23,7 +23,12 @@ contract UserToSnakeDequeSystem is System {
       _d.add = add;
       if (gameUserSnakeBody[msg.sender].length > 10) {
         _d.remove = gameUserSnakeBody[msg.sender][0];
-        gameUserSnakeBody[msg.sender].pop();
+
+        // 手动移动数组元素，删除第一个元素
+        for (uint i = 1; i < gameUserSnakeBody[msg.sender].length; i++) {
+            gameUserSnakeBody[msg.sender][i - 1] = gameUserSnakeBody[msg.sender][i];
+        }
+        gameUserSnakeBody[msg.sender].pop(); // 移除最后一个元素
       }
       return _d;
   }
