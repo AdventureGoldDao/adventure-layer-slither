@@ -20,8 +20,8 @@ export async function setup() {
   };
 }
 
-export async function setupCustom(walletAddress: string) {
-  const network = await setupNetwork(walletAddress);
+export async function setupCustom(mode: string) {
+  const network = await setupNetwork(mode);
   const components = createClientComponents(network);
   const systemCalls = createSystemCalls(network, components);
 

@@ -46,6 +46,13 @@ export default defineWorld({
       },
       key: ["player"],
     },
+    UserAccountMapping: {
+      schema: {
+        player: "address",
+        account: "string",
+      },
+      key: ["player"],
+    },
   },
 });
 

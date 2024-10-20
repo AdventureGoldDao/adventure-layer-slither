@@ -1,4 +1,4 @@
-import React, { useState, Dispatch, SetStateAction } from "react";
+import React, { useState, Dispatch, SetStateAction, useEffect } from "react";
 
 import "./Home.css";
 
@@ -6,9 +6,58 @@ import { registerSocket } from "../App";
 import GameState from "../game/GameState";
 import { OrbData } from "../game/orb/Orb";
 import HowToPlay from "./HowToPlay";
+import { Kbd } from "@chakra-ui/react";
 
-import { useMUD } from "../MUDContext";
+import { ethers } from "ethers";
+import web3, { Web3 } from 'web3';
+import { setupCustom } from "../mud/setup";
+import { setBurnerPrivateKey } from "../mud/util";
+import { useCustomMUD, useMUD } from "../MUDContext";
 import { useComponentValue } from "@latticexyz/react";
+
+import { getNetworkConfig } from "../mud/getNetworkConfig";
+import { shortenAddress } from "@usedapp/core";
+
+async function switchNetwork(targetChainId) {
+  try {
+    // 尝试切换到目标网络
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: Web3.utils.toHex(targetChainId) }],
+    });
+  } catch (switchError) {
+    // 如果目标网络没有添加到钱包，添加网络
+    if (switchError.code === 4902) {
+      await addNetwork(targetChainId);
+    } else {
+      throw switchError;
+    }
+  }
+}
+
+async function addNetwork(chainId) {
+  // const networkConfig = await getNetworkConfig();
+  const networkParams = {
+    chainId: Web3.utils.toHex(chainId), // 目标网络的 Chain ID
+    chainName: 'Adventure Layer Shard', // 目标网络名称
+    nativeCurrency: {
+      name: 'AGLD',
+      symbol: 'AGLD',
+      decimals: 18,
+    },
+    rpcUrls: ['http://34.228.184.10:8587'], // 替换为目标网络的 RPC URL
+    // blockExplorerUrls: ['https://sepolia.etherscan.io'], // 替换为区块浏览器 URL
+  };
+
+  try {
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [networkParams],
+    });
+  } catch (addError) {
+    console.error("Failed to add network:", addError);
+  }
+}
 
 /**
  * Interface representing data for an HTML input that updates metadata based
@@ -107,23 +156,116 @@ export default function Home({
     network: {playerEntity},
     components: {Users},
     systemCalls: {
-      stGame,updateGameState, moveSnake
+      stGame,updateGameState, moveSnake,
     },
   } = useMUD();
+  const { setMudContext } = useCustomMUD();
   const uData = useComponentValue(Users, playerEntity);
   console.log("uData:", uData)
 
   const [username, setUsername] = useState("");
+  const [account, setAccount] = useState("");
+  const [accountSetup, setAccountSetup] = useState(null);
+  const [privateKey, setPrivateKey] = useState("");
   const [inputGamecode, setInputGamecode] = useState("");
   const [errorText, setErrorText] = useState("");
   const [displayHowToPlay, setDisplayHowToPlay] = useState(false);
 
+  useEffect(() => {
+    window.ethereum.request({ method: "eth_requestAccounts" }).then(() => {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      signer.getAddress().then(address => {
+        setAccount(address)
+      });
+    })
+
+    getNetworkConfig().then(networkConfig => {
+      // console.log('Private', networkConfig.privateKey)
+      setPrivateKey(networkConfig.privateKey);
+    })
+
+    // setBindAccount('0xcA64108F6D7117922aD403951fA92b782cD81662').then((res) => {
+    //   console.log('setBindAccount:', res);
+    //   return getBindAccountBy().then(testAccount => {
+    //     console.log('getBindAccount:', testAccount)
+    //     return testAccount
+    //   })
+    // })
+
+  }, [])
+
+  const connectWallet = async () => {
+    try {
+      const networkConfig = await getNetworkConfig();
+      const targetChainId = networkConfig.chainId;
+      const web3 = new Web3(window.ethereum);
+      const chainId = await web3.eth.getChainId();
+      if (chainId !== BigInt(targetChainId)) {
+        try {
+          await switchNetwork(targetChainId);
+        } catch (error) {
+          console.error("Failed to switch network:", error);
+        }
+      }
+
+      let address = account
+      if (!account) {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        address = await signer.getAddress();
+        setAccount(address)
+      }
+
+      let setupResult = accountSetup
+      if (!accountSetup) {
+        setupResult = await setupCustom('wallet')
+        setAccountSetup(setupResult)
+      }
+
+      try {
+        // const accountResult = await setupResult.systemCalls.getBindAccountBy()
+        // console.log('BindAccount:', accountResult)
+        // const bindAccount = accountResult ? accountResult.account : ''
+        const bindAccount = await setupResult.systemCalls.getUserBindAccount(account)
+        console.log('BindAccount:', bindAccount)
+
+        if (bindAccount && bindAccount !== privateKey) {
+          console.log('Read Exist Account')
+          setPrivateKey(bindAccount)
+          setBurnerPrivateKey(bindAccount)
+          const existResult = await setupCustom('default')
+          setMudContext(existResult)
+        } else if (!bindAccount) {
+          console.log('Set New Account')
+          await setupResult.systemCalls.setBindAccount(privateKey)
+        }
+      } catch (err) {
+        console.log('BindAccount Err', err)
+        setErrorText('Failed to connect wallet.')
+      }
+
+      // setMudContext
+      return address
+    } catch (error) {
+      setErrorText('Failed to connect wallet.')
+    }
+    return null;
+  }
+
   // registers the client's websocket to handle joining a new game
-  const startNewGame = (): void => {
+  const startNewGame = async () => {
     if (username.trim().length === 0) {
       setErrorText("Your username should be non-empty!");
       return;
     }
+
+    // if (!account) {
+    const address = await connectWallet();
+    setAccount(address);
+    // }
+
     doSol();
     setErrorText("");
 
@@ -166,8 +308,6 @@ export default function Home({
       setErrorText("Error: Failed to join the game!");
     }
   }
-
-
 
   // registers the client's websocket to handle joining a game with a code
   const startGameWithCode = (): void => {
@@ -217,6 +357,9 @@ export default function Home({
             +
           </span>
         </h1>
+        <div style={{marginTop: "12px"}}>
+          <Kbd>{ account ? shortenAddress(account) : 'offline'}</Kbd>
+        </div>
         <h2
           className="username-prompt"
           aria-label="Prompt: Enter your username"
