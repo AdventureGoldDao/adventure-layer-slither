@@ -5,6 +5,7 @@ import Snake, { SnakeData, SNAKE_VELOCITY } from "./snake/Snake";
 import Orb, { OrbData } from "./orb/Orb";
 import Border from "./boundary/Boundary";
 import OtherSnake from "./snake/OtherSnake";
+import { useMUD } from "../MUDContext";
 
 import { sendUpdatePositionMessage } from "../message/message";
 
@@ -51,6 +52,14 @@ export default function GameCanvas({
   setGameState,
   socket,
 }: GameCanvasProps): JSX.Element {
+  const {
+    network: {playerEntity},
+    components: {Users},
+    systemCalls: {
+      stGame,updateGameState, moveSnake
+    },
+  } = useMUD();
+
   const onMouseMove = (e: MouseEvent) => {
     mousePos.x = e.pageX;
     mousePos.y = e.pageY;
@@ -58,7 +67,7 @@ export default function GameCanvas({
 
   const updatePositions = () => {
     const newGameState: GameState = { ...gameState };
-    const updatedSnake: SnakeData = moveSnake(gameState.snake, socket);
+    const updatedSnake: SnakeData = moveSnakeTick(gameState.snake, socket, moveSnake);
     // constantly update your own snake using moveSnake
     newGameState.snake = updatedSnake;
     setGameState(newGameState);
@@ -104,7 +113,7 @@ export default function GameCanvas({
  * @param socket The client's websocket for communication with the Slither+ server
  * @returns the newly updated metadata for the client's snake
  */
-export function moveSnake(snake: SnakeData, socket: WebSocket): SnakeData {
+export function moveSnakeTick(snake: SnakeData, socket: WebSocket,contractFunc:(x: number, y: number) => void): SnakeData {
   // remove last position from the end (to simulate movement)
   const removePosition: Position | undefined = snake.snakeBody.pop();
   const front: Position | undefined = snake.snakeBody.peekFront();

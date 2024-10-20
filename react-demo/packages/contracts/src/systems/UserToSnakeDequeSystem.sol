@@ -1,15 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import {UserToSnakeDeque} from "../codegen/index.sol";
 import {System} from "@latticexyz/world/src/System.sol";
-import {Position} from "../common.sol";
+import {Position,UpdatePosition} from "../common.sol";
+
 contract UserToSnakeDequeSystem is System {
 
-  struct updatePosition {
-    Position add;
-    Position remove;
-  }
+
 
   mapping(address => Position[]) private gameUserSnakeBody;
 
@@ -17,7 +14,7 @@ contract UserToSnakeDequeSystem is System {
     return gameUserSnakeBody[msg.sender];
   }
 
-  function moveSnake(int x,int y) public returns (updatePosition memory _d){
+  function moveSnake(int x,int y) public returns (UpdatePosition memory _d){
       Position memory add = Position(x,y);
       gameUserSnakeBody[msg.sender].push(add);
       _d.add = add;

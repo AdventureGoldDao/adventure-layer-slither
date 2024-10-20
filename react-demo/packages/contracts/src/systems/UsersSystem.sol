@@ -6,6 +6,7 @@ import {System} from "@latticexyz/world/src/System.sol";
 
 contract UsersSystem is System {
 
+  //get score
   function getData() public view returns (UsersData memory) {
     return Users.get(msg.sender);
   }
