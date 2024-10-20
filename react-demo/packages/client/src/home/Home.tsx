@@ -45,7 +45,7 @@ async function addNetwork(chainId) {
       symbol: 'AGLD',
       decimals: 18,
     },
-    rpcUrls: ['http://34.228.184.10:8587'], // 替换为目标网络的 RPC URL
+    rpcUrls: ['https://slither-demo.adventurelayer.xyz/shard'], // 替换为目标网络的 RPC URL
     // blockExplorerUrls: ['https://sepolia.etherscan.io'], // 替换为区块浏览器 URL
   };
 

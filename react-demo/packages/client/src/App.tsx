@@ -85,9 +85,9 @@ export default function App(): JSX.Element {
 
 /** Metadata for forming the URL to connect with the server websocket */
 const AppConfig = {
-  PROTOCOL: "ws:",
-  HOST: "//127.0.0.1",
-  PORT: ":8511",
+  PROTOCOL: "wss:",
+  HOST: "slither-demo.adventurelayer.xyz",
+  PORT: "/server",
 };
 
 /** The client's websocket for communication with the server */

@@ -4,6 +4,7 @@
   top: 2%;
   right: 1%;
   opacity: 60%;
+  z-index: 9999999;
 }
 
 .leaderboard-title {

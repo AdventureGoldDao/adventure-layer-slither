@@ -24,7 +24,7 @@ fs_permissions = [{ access = "read", path = "./"}]
 eth_rpc_url = "http://127.0.0.1:8587"
 
 [profile.dev]
-eth_rpc_url = "https://snake-demo.adventurelayer.xyz/shard"
+eth_rpc_url = "https://slither-demo.adventurelayer.xyz/shard"
 
 [profile.prod]
 eth_rpc_url = "https://rpc.redstonechain.com"
