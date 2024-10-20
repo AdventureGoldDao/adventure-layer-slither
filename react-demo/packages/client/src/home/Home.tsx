@@ -292,11 +292,16 @@ export default function Home({
     console.log("adduser success:", r)
     setGameCode("12345");
     // setGameStarted(true)
-    console.log("init state:", await adventureHeatbeat())
+    // console.log("init state:", await adventureHeatbeat())
     console.log("getOrbData: ",await getOrbData())
     console.log("getLeaderboardData: ",await getLeaderboardData())
     console.log("getSnakeBody: ",await getSnakeBody())
-    console.log("moveSnake: ",await moveSnake(60200,10000))
+    let list = [];
+    for (let i = 0; i < 10; i++) {
+      list.push({x:60300 + i*100,y: 10000});
+    }
+    console.log("moveSnake: ",await moveSnake(list))
+    console.log("getSnakeBody: ",await getSnakeBody())
   }
 
   // registers the client's websocket to handle joining a game with a code

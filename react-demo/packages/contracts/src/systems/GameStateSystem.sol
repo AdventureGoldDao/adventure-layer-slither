@@ -76,30 +76,31 @@ contract GameStateSystem is System {
   }
 
 
-  function moveSnake(int x,int y) public returns (UpdatePosition memory _d){
-    Position memory add = Position(x,y);
-    gameUserSnakeBody[msg.sender].push(add);
-    _d.add = add;
+  function moveSnake(Position[] memory list) public returns (UpdatePosition memory _d){
+    for (uint i = 0; i < list.length; i++) {
+      Position memory add = list[i];
+      gameUserSnakeBody[msg.sender].push(add);
+      _d.add = add;
 
-    uint256 idx = Orbs.getValue(positionToEntityKey(add));
-    if (idx != 0) {
-      Orbs.deleteRecord(positionToEntityKey(add));
-      Orb memory o = gameStateData.orbs[idx];
-      if (keccak256(bytes(o.orbSize)) == keccak256(bytes("SMALL"))) {
-        Users.setScore(msg.sender,Users.getScore(msg.sender) + 1);
-      }else{
-        Users.setScore(msg.sender,Users.getScore(msg.sender) + 2);
+      uint256 idx = Orbs.getValue(positionToEntityKey(add));
+      if (idx != 0) {
+        Orbs.deleteRecord(positionToEntityKey(add));
+        Orb memory o = gameStateData.orbs[idx];
+        if (keccak256(bytes(o.orbSize)) == keccak256(bytes("SMALL"))) {
+          Users.setScore(msg.sender,Users.getScore(msg.sender) + 1);
+        }else{
+          Users.setScore(msg.sender,Users.getScore(msg.sender) + 2);
+        }
+        delete gameStateData.orbs[idx];
       }
-      delete gameStateData.orbs[idx];
-    }
 
-    if (gameUserSnakeBody[msg.sender].length >= 6) {
       _d.remove = gameUserSnakeBody[msg.sender][0];
-      for (uint i = 1; i < gameUserSnakeBody[msg.sender].length; i++) {
-        gameUserSnakeBody[msg.sender][i - 1] = gameUserSnakeBody[msg.sender][i];
+      for (uint k = 1; k < gameUserSnakeBody[msg.sender].length; k++) {
+        gameUserSnakeBody[msg.sender][k - 1] = gameUserSnakeBody[msg.sender][k];
       }
       gameUserSnakeBody[msg.sender].pop();
     }
+
     return _d;
   }
 

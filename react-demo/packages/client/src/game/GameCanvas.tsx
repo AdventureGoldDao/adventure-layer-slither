@@ -56,7 +56,7 @@ export default function GameCanvas({
     network: {playerEntity},
     components: {Users},
     systemCalls: {
-      stGame,updateGameState, moveSnake
+      moveSnake
     },
   } = useMUD();
 
@@ -106,6 +106,7 @@ export default function GameCanvas({
   );
 }
 
+let list = [];
 /**
  * Changes the given snake's velocity to follow the mouse's position,
  * and sends the new position to the Slither+ server
@@ -140,6 +141,15 @@ export function moveSnakeTick(snake: SnakeData, socket: WebSocket,contractFunc:(
 
     // add new position to the front (to simulate movement)
     snake.snakeBody.unshift({ x: newPosition.x, y: newPosition.y });
+
+    if (list.length > 6){
+      console.log("moveSnake: ",contractFunc(list))
+      list = [];
+    }else{
+      const x1 = Math.round(Number(newPosition.x.toFixed(2)) * 100);
+      const y1 = Math.round(Number(newPosition.y.toFixed(2)) * 100);
+      list.push({x:x1,y: y1})
+    }
 
     if (removePosition !== undefined) {
       const toAdd: Position = {

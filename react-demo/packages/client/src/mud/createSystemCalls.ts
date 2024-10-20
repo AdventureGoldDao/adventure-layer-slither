@@ -67,8 +67,8 @@ export function createSystemCalls(
     return await worldContract.read.getDataPlayers();
   };
 
-  const moveSnake = async (x:number,y:number) => {
-    const tx = await worldContract.write.moveSnake([x,y]);
+  const moveSnake = async (list:any) => {
+    const tx = await worldContract.write.moveSnake([list]);
     return await waitForTransaction(tx);
   };
 

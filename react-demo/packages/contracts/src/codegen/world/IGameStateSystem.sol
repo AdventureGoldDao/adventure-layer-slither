@@ -30,7 +30,7 @@ interface IGameStateSystem {
 
   function gameStateExistsAndRemove(bool remove) external returns (bool);
 
-  function moveSnake(int x, int y) external returns (UpdatePosition memory _d);
+  function moveSnake(Position[] memory list) external returns (UpdatePosition memory _d);
 
   function adventureHeatbeat() external;
 
