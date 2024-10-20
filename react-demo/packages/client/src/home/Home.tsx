@@ -3,6 +3,7 @@ import React, { useState, Dispatch, SetStateAction, useEffect } from "react";
 import "./Home.css";
 
 import { registerSocket } from "../App";
+import { registerContract } from "../event";
 import GameState from "../game/GameState";
 import { OrbData } from "../game/orb/Orb";
 import HowToPlay from "./HowToPlay";
@@ -159,10 +160,12 @@ export default function Home({
       stGame,adventureHeatbeat, moveSnake,getDataPlayers,getOrbData,getLeaderboardData,getSnakeBody
     },
   } = useMUD();
+  const { systemCalls } = useMUD()
   const { setMudContext } = useCustomMUD();
   const uData = useComponentValue(Users, playerEntity);
   console.log("uData:", uData)
 
+  const [timer, setTimer] = useState(null);
   const [username, setUsername] = useState("");
   const [account, setAccount] = useState("");
   const [accountSetup, setAccountSetup] = useState(null);
@@ -185,6 +188,13 @@ export default function Home({
       setPrivateKey(networkConfig.privateKey);
     })
 
+    systemCalls.getSnakeBody().then((result) => {
+      console.log('getSnakeBody:', result)
+    })
+
+    systemCalls.getLeaderboardData().then((result) => {
+      console.log('getLeaderboardData:', result)
+    })
     // setBindAccount('0xcA64108F6D7117922aD403951fA92b782cD81662').then((res) => {
     //   console.log('setBindAccount:', res);
     //   return getBindAccountBy().then(testAccount => {
@@ -193,6 +203,11 @@ export default function Home({
     //   })
     // })
 
+    return () => {
+      if (timer) {
+        clearInterval(timer)
+      }
+    }
   }, [])
 
   const connectWallet = async () => {
@@ -270,6 +285,20 @@ export default function Home({
     setErrorText("");
 
     try {
+      registerContract(
+        setTimer,
+        systemCalls,
+        setScores,
+        setGameStarted,
+        setErrorText,
+        setGameCode,
+        orbSet,
+        gameState,
+        setGameState,
+        username,
+        false,
+      );
+
       registerSocket(
         setScores,
         setGameStarted,
@@ -279,7 +308,7 @@ export default function Home({
         gameState,
         setGameState,
         username,
-        false
+        false,
       );
     } catch (e) {
       // check server status
@@ -313,18 +342,18 @@ export default function Home({
     }
     setErrorText("");
     try {
-      registerSocket(
-        setScores,
-        setGameStarted,
-        setErrorText,
-        setGameCode,
-        orbSet,
-        gameState,
-        setGameState,
-        username,
-        true,
-        inputGamecode
-      );
+      // registerSocket(
+      //   setScores,
+      //   setGameStarted,
+      //   setErrorText,
+      //   setGameCode,
+      //   orbSet,
+      //   gameState,
+      //   setGameState,
+      //   username,
+      //   true,
+      //   inputGamecode
+      // );
     } catch (e) {
       // check server status
       setErrorText("Error: Could not connect to server!");
@@ -378,7 +407,7 @@ export default function Home({
         <p className="error-text">{errorText}</p>
         <div className="container">
           <div className="row">
-            <div className="col-lg-5 col-md-5 col-sm-12">
+            <div className="col-lg-12 col-md-12 col-sm-12">
               <button
                 className="btn btn-light new-game-button"
                 aria-label="New Game Button"
@@ -387,7 +416,7 @@ export default function Home({
                 Create a new game
               </button>
             </div>
-            <div className="col-lg-2 col-md-2 col-sm-12">
+            {/* <div className="col-lg-2 col-md-2 col-sm-12">
               <div className="or-text">OR</div>
             </div>
             <div className="col-lg-5 col-md-5 col-sm-12">
@@ -413,7 +442,7 @@ export default function Home({
               >
                 Join with a game code
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

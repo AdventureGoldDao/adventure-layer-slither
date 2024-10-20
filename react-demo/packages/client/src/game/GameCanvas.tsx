@@ -139,6 +139,7 @@ export function moveSnakeTick(snake: SnakeData, socket: WebSocket,contractFunc:(
       y: front.y + snake.velocityY,
     };
 
+    contractFunc(newPosition.x * 100, newPosition.y * 100)
     // add new position to the front (to simulate movement)
     snake.snakeBody.unshift({ x: newPosition.x, y: newPosition.y });
 
