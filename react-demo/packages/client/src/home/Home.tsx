@@ -156,7 +156,7 @@ export default function Home({
     network: {playerEntity},
     components: {Users},
     systemCalls: {
-      stGame,updateGameState, moveSnake,
+      stGame,adventureHeatbeat, moveSnake,getDataPlayers,getOrbData,getLeaderboardData,getSnakeBody
     },
   } = useMUD();
   const { setMudContext } = useCustomMUD();
@@ -290,23 +290,14 @@ export default function Home({
   const doSol = async () => {
     const r = await stGame(username)
     console.log("adduser success:", r)
-    let code = r?.gameCode ?? 1234
-    if (code) {
-      setGameCode(code+"");
-      // setGameStarted(true)
-      const gameState = await updateGameState(code);
-      console.log("gameState: ",gameState)
-      console.log("moveSnake: ",await moveSnake(145,657))
-      // console.log("moveSnake: ",await moveSnake(578,654))
-
-      // gameState.orbs = gameState.orbs ?? [];
-      // setGameState(gameState);
-
-
-    } else {
-      setGameStarted(false)
-      setErrorText("Error: Failed to join the game!");
-    }
+    setGameCode("12345");
+    // setGameStarted(true)
+    console.log("init state:", await adventureHeatbeat())
+    console.log("getDataPlayers: ",await getDataPlayers())
+    console.log("getOrbData: ",await getOrbData())
+    console.log("getLeaderboardData: ",await getLeaderboardData())
+    console.log("getSnakeBody: ",await getSnakeBody())
+    console.log("moveSnake: ",await moveSnake(60200,10000))
   }
 
   // registers the client's websocket to handle joining a game with a code

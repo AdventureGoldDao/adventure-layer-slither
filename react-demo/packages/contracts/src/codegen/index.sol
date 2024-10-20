@@ -8,5 +8,6 @@ import { GameCodeToGameState } from "./tables/GameCodeToGameState.sol";
 import { UserToOthersPositions } from "./tables/UserToOthersPositions.sol";
 import { UserToOwnPositions } from "./tables/UserToOwnPositions.sol";
 import { UserToSnakeDeque } from "./tables/UserToSnakeDeque.sol";
+import { Orbs } from "./tables/Orbs.sol";
 import { Balance } from "./tables/Balance.sol";
 import { UserAccountMapping } from "./tables/UserAccountMapping.sol";

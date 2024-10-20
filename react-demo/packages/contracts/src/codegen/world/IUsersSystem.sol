@@ -12,12 +12,4 @@ import { UsersData } from "../index.sol";
  */
 interface IUsersSystem {
   function getData() external view returns (UsersData memory);
-
-  function stGame(string memory name) external;
-
-  function addUser(uint32 gameCode) external;
-
-  function gameStateExistsAndRemove(uint32 gameCode, bool remove) external returns (bool);
-
-  function generateRandom() external view returns (uint256);
 }

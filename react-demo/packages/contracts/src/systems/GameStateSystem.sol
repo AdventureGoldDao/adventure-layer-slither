@@ -2,44 +2,121 @@
 pragma solidity >=0.8.24;
 
 import {System} from "@latticexyz/world/src/System.sol";
-import {Users, UsersData, GameCodeToGameState} from "../codegen/index.sol";
+import {Users, UsersData, GameCodeToGameState, Orbs} from "../codegen/index.sol";
 import {OrbSize} from "../codegen/common.sol";
-import {Position,Orb,GameState} from "../common.sol";
+import {Position,Orb,GameState,UpdatePosition,positionToEntityKey} from "../common.sol";
 
 contract GameStateSystem is System {
   uint constant MAX_ORB_COUNT = 150;
+  uint32 constant gameCode = 12345;
   uint256 constant MAP_COORDINATE = 140000;
+  mapping(address => Position[]) public gameUserSnakeBody;
+  GameState private gameStateData;
 
-  mapping(uint32 => GameState) private gameStateData;
-
-
-  function getLeaderboardData(uint32 gameCode) public view returns (GameState memory) {
-    return gameStateData[gameCode];
+  function getLeaderboardData() public view returns (UsersData[] memory) {
+    return gameStateData.leaderboard;
   }
 
-  function getDataPlayers(uint32 gameCode) public view returns (address[] memory) {
+
+  function getOrbData() public view returns (Orb[] memory) {
+    return gameStateData.orbs;
+  }
+
+  function getDataPlayers() public view returns (address[] memory) {
     return GameCodeToGameState.getPlayers(gameCode);
   }
 
-  function updateGameState(uint32 gameCode) public {
-    address[] memory _players = GameCodeToGameState.getPlayers(gameCode);
-    if (gameStateData[gameCode].leaderboard.length > 0) {
-      delete gameStateData[gameCode].leaderboard;
+  function getSnakeBody(address addr) public view returns (Position[] memory) {
+    return gameUserSnakeBody[addr];
+  }
+
+  function initSnakeBody() public {
+    if (gameUserSnakeBody[msg.sender].length == 0) {
+      for (int i = 100; i < 6; i+=100) {
+        gameUserSnakeBody[msg.sender].push(Position(int(60000) - i,int(10000)));
+      }
+    }
+  }
+
+  function stGame(string memory name) public {
+    Users.setUsername(msg.sender,name);
+    addUser();
+  }
+
+  function addUser() public {
+    if (gameStateExistsAndRemove(false)) {
+      GameCodeToGameState.pushPlayers(gameCode,msg.sender);
+      initSnakeBody();
+    }
+  }
+
+  function endGame() public {
+      gameStateExistsAndRemove(true);
+  }
+
+  function gameStateExistsAndRemove(bool remove) public returns (bool) {
+    address[] memory players = GameCodeToGameState.getPlayers(gameCode);
+    for (uint256 i = 0; i < players.length; i++) {
+      if (players[i] == msg.sender) {
+        if (remove){
+          Users.deleteRecord(msg.sender);
+          delete gameUserSnakeBody[msg.sender];
+          if (players.length -1 == i){
+            GameCodeToGameState.popPlayers(gameCode);
+          }else{
+            address a = GameCodeToGameState.getItemPlayers(gameCode,players.length -1);
+            GameCodeToGameState.popPlayers(gameCode);
+            GameCodeToGameState.updatePlayers(gameCode,uint256(i),a);
+          }
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
+
+  function moveSnake(int x,int y) public returns (UpdatePosition memory _d){
+    Position memory add = Position(x,y);
+    gameUserSnakeBody[msg.sender].push(add);
+    _d.add = add;
+
+    uint256 idx = Orbs.getValue(positionToEntityKey(add));
+    if (idx != 0) {
+      Orbs.deleteRecord(positionToEntityKey(add));
+      Orb memory o = gameStateData.orbs[idx];
+      if (keccak256(bytes(o.orbSize)) == keccak256(bytes("SMALL"))) {
+        Users.setScore(msg.sender,Users.getScore(msg.sender) + 1);
+      }else{
+        Users.setScore(msg.sender,Users.getScore(msg.sender) + 2);
+      }
+      delete gameStateData.orbs[idx];
+    }
+
+    if (gameUserSnakeBody[msg.sender].length >= 6) {
+      _d.remove = gameUserSnakeBody[msg.sender][0];
+      for (uint i = 1; i < gameUserSnakeBody[msg.sender].length; i++) {
+        gameUserSnakeBody[msg.sender][i - 1] = gameUserSnakeBody[msg.sender][i];
+      }
+      gameUserSnakeBody[msg.sender].pop();
+    }
+    return _d;
+  }
+
+  function adventureHeatbeat() public {
+    address[] memory _players = GameCodeToGameState.getPlayers(uint32(12345));
+    if (gameStateData.leaderboard.length > 0) {
+      delete gameStateData.leaderboard;
     }
     for (uint256 i = 0; i < _players.length; i++) {
-      address player = _players[i];
-      require(player != address(0), "Invalid player address");
-      gameStateData[gameCode].leaderboard.push(Users.get(player));
+      gameStateData.leaderboard.push(Users.get(_players[i]));
     }
-    uint256 len = gameStateData[gameCode].orbs.length;
+    uint256 len = gameStateData.orbs.length;
     for (uint256 i = 0; i < MAX_ORB_COUNT - len; i++) {
       int idx = int(i + len);
-      gameStateData[gameCode].orbs.push(
-        Orb(
-          Position(randomCoordinate(idx), randomCoordinate(idx + 3)),
-          generateOrbSize(idx), generateColor(idx)
-        )
-      );
+      Position memory p = Position(randomCoordinate(idx), randomCoordinate(idx + 3));
+      Orbs.set(positionToEntityKey(p),i);
+      gameStateData.orbs.push(Orb(p, generateOrbSize(idx), generateColor(idx)));
     }
   }
 

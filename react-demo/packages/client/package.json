@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "wait-port 34.228.184.10:8587 && vite",
+    "dev": "wait-port 127.0.0.1:8587 && vite",
     "preview": "vite preview",
     "test": "tsc --noEmit"
   },

@@ -21,3 +21,11 @@ import {UsersData} from "./codegen/tables/Users.sol";
     Position add;
     Position remove;
   }
+
+
+
+  function positionToEntityKey(Position memory p) pure returns (bytes32) {
+    int x = p.x / 100;
+    int y = p.x / 100;
+    return keccak256(abi.encode(x, y));
+  }

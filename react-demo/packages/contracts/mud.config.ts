@@ -5,7 +5,6 @@ export default defineWorld({
     Users: {
       schema: {
         player: "address",
-        gameCode: "uint32",
         score: "uint32",
         username: "string",
       },
@@ -39,6 +38,7 @@ export default defineWorld({
       },
       key: ["player"],
     },
+    Orbs: "uint256",
     Balance: {
       schema: {
         player: "address",

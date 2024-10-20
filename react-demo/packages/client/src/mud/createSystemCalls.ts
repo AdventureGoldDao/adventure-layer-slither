@@ -30,7 +30,7 @@ export function createSystemCalls(
    *   syncToRecs
    *   (https://github.com/latticexyz/mud/blob/main/templates/react/packages/client/src/mud/setupNetwork.ts#L77-L83).
    */
-  { worldContract, waitForTransaction, playerEntity }: SetupNetworkResult,
+  { worldContract, waitForTransaction, playerEntity,walletClient }: SetupNetworkResult,
   {
     Users,
     Balance,
@@ -42,21 +42,34 @@ export function createSystemCalls(
     await waitForTransaction(tx);
     return getComponentValue(Users, playerEntity);
   };
-
-  const updateGameState = async (gameCode:number) => {
-    const tx = await worldContract.write.updateGameState([gameCode]);
+  const endGame = async () => {
+    const tx = await worldContract.write.endGame();
     await waitForTransaction(tx);
-    return await worldContract.read.getLeaderboardData([gameCode]);
+    return getComponentValue(Users, playerEntity);
+  };
+
+  const adventureHeatbeat = async () => {
+    const tx = await worldContract.write.adventureHeatbeat();
+    return await waitForTransaction(tx);
   };
 
   const getSnakeBody = async () => {
-    return await worldContract.read.getSnakeBody();
+    return await worldContract.read.getSnakeBody([walletClient.account.address]);
+  };
+  const getOrbData = async () => {
+    return await worldContract.read.getOrbData();
+  };
+  const getLeaderboardData = async () => {
+    return await worldContract.read.getLeaderboardData();
+  };
+
+  const getDataPlayers = async () => {
+    return await worldContract.read.getDataPlayers();
   };
 
   const moveSnake = async (x:number,y:number) => {
     const tx = await worldContract.write.moveSnake([x,y]);
-    await waitForTransaction(tx);
-    return await getSnakeBody();
+    return await waitForTransaction(tx);
   };
 
   const getBindAccount = async () => {
@@ -90,7 +103,11 @@ export function createSystemCalls(
   return {
     stGame,
     moveSnake,
-    updateGameState,
+    getSnakeBody,
+    getOrbData,
+    getLeaderboardData,
+    adventureHeatbeat,
+    getDataPlayers,
     getBindAccount,
     getBindAccountBy,
     getUserBindAccount,

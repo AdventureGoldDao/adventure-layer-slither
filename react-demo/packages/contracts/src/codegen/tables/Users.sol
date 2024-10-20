@@ -17,7 +17,6 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 struct UsersData {
-  uint32 gameCode;
   uint32 score;
   string username;
 }
@@ -27,12 +26,12 @@ library Users {
   ResourceId constant _tableId = ResourceId.wrap(0x7462000000000000000000000000000055736572730000000000000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0008020104040000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0004010104000000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (address)
   Schema constant _keySchema = Schema.wrap(0x0014010061000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint32, uint32, string)
-  Schema constant _valueSchema = Schema.wrap(0x000802010303c500000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint32, string)
+  Schema constant _valueSchema = Schema.wrap(0x0004010103c50000000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -48,10 +47,9 @@ library Users {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](3);
-    fieldNames[0] = "gameCode";
-    fieldNames[1] = "score";
-    fieldNames[2] = "username";
+    fieldNames = new string[](2);
+    fieldNames[0] = "score";
+    fieldNames[1] = "username";
   }
 
   /**
@@ -69,55 +67,13 @@ library Users {
   }
 
   /**
-   * @notice Get gameCode.
-   */
-  function getGameCode(address player) internal view returns (uint32 gameCode) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
-
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
-  }
-
-  /**
-   * @notice Get gameCode.
-   */
-  function _getGameCode(address player) internal view returns (uint32 gameCode) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
-
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
-  }
-
-  /**
-   * @notice Set gameCode.
-   */
-  function setGameCode(address player, uint32 gameCode) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
-
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((gameCode)), _fieldLayout);
-  }
-
-  /**
-   * @notice Set gameCode.
-   */
-  function _setGameCode(address player, uint32 gameCode) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
-
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((gameCode)), _fieldLayout);
-  }
-
-  /**
    * @notice Get score.
    */
   function getScore(address player) internal view returns (uint32 score) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(uint160(player)));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint32(bytes4(_blob)));
   }
 
@@ -128,7 +84,7 @@ library Users {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(uint160(player)));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint32(bytes4(_blob)));
   }
 
@@ -139,7 +95,7 @@ library Users {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(uint160(player)));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((score)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((score)), _fieldLayout);
   }
 
   /**
@@ -149,7 +105,7 @@ library Users {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(uint160(player)));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((score)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((score)), _fieldLayout);
   }
 
   /**
@@ -347,8 +303,8 @@ library Users {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(address player, uint32 gameCode, uint32 score, string memory username) internal {
-    bytes memory _staticData = encodeStatic(gameCode, score);
+  function set(address player, uint32 score, string memory username) internal {
+    bytes memory _staticData = encodeStatic(score);
 
     EncodedLengths _encodedLengths = encodeLengths(username);
     bytes memory _dynamicData = encodeDynamic(username);
@@ -362,8 +318,8 @@ library Users {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(address player, uint32 gameCode, uint32 score, string memory username) internal {
-    bytes memory _staticData = encodeStatic(gameCode, score);
+  function _set(address player, uint32 score, string memory username) internal {
+    bytes memory _staticData = encodeStatic(score);
 
     EncodedLengths _encodedLengths = encodeLengths(username);
     bytes memory _dynamicData = encodeDynamic(username);
@@ -378,7 +334,7 @@ library Users {
    * @notice Set the full data using the data struct.
    */
   function set(address player, UsersData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.gameCode, _table.score);
+    bytes memory _staticData = encodeStatic(_table.score);
 
     EncodedLengths _encodedLengths = encodeLengths(_table.username);
     bytes memory _dynamicData = encodeDynamic(_table.username);
@@ -393,7 +349,7 @@ library Users {
    * @notice Set the full data using the data struct.
    */
   function _set(address player, UsersData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.gameCode, _table.score);
+    bytes memory _staticData = encodeStatic(_table.score);
 
     EncodedLengths _encodedLengths = encodeLengths(_table.username);
     bytes memory _dynamicData = encodeDynamic(_table.username);
@@ -407,10 +363,8 @@ library Users {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (uint32 gameCode, uint32 score) {
-    gameCode = (uint32(Bytes.getBytes4(_blob, 0)));
-
-    score = (uint32(Bytes.getBytes4(_blob, 4)));
+  function decodeStatic(bytes memory _blob) internal pure returns (uint32 score) {
+    score = (uint32(Bytes.getBytes4(_blob, 0)));
   }
 
   /**
@@ -439,7 +393,7 @@ library Users {
     EncodedLengths _encodedLengths,
     bytes memory _dynamicData
   ) internal pure returns (UsersData memory _table) {
-    (_table.gameCode, _table.score) = decodeStatic(_staticData);
+    (_table.score) = decodeStatic(_staticData);
 
     (_table.username) = decodeDynamic(_encodedLengths, _dynamicData);
   }
@@ -468,8 +422,8 @@ library Users {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint32 gameCode, uint32 score) internal pure returns (bytes memory) {
-    return abi.encodePacked(gameCode, score);
+  function encodeStatic(uint32 score) internal pure returns (bytes memory) {
+    return abi.encodePacked(score);
   }
 
   /**
@@ -498,11 +452,10 @@ library Users {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
-    uint32 gameCode,
     uint32 score,
     string memory username
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(gameCode, score);
+    bytes memory _staticData = encodeStatic(score);
 
     EncodedLengths _encodedLengths = encodeLengths(username);
     bytes memory _dynamicData = encodeDynamic(username);

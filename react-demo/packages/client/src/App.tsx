@@ -86,7 +86,7 @@ export default function App(): JSX.Element {
 /** Metadata for forming the URL to connect with the server websocket */
 const AppConfig = {
   PROTOCOL: "ws:",
-  HOST: "//34.228.184.10",
+  HOST: "//127.0.0.1",
   PORT: ":8511",
 };
 
@@ -177,8 +177,7 @@ export function registerSocket(
         const otherUserDiedMessage: OtherUserDiedMessage = message;
         const removePositions: Position[] =
           otherUserDiedMessage.data.removePositions;
-        // console.log("removePositions");
-        // console.log(removePositions);
+        console.log("removePositions", removePositions);
         const newGameState: GameState = { ...gameState };
         removePositions.forEach((position: Position) => {
           newGameState.otherBodies.delete(JSON.stringify(position));
