@@ -293,7 +293,6 @@ export default function Home({
     setGameCode("12345");
     // setGameStarted(true)
     console.log("init state:", await adventureHeatbeat())
-    console.log("getDataPlayers: ",await getDataPlayers())
     console.log("getOrbData: ",await getOrbData())
     console.log("getLeaderboardData: ",await getLeaderboardData())
     console.log("getSnakeBody: ",await getSnakeBody())

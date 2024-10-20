@@ -32,8 +32,8 @@ contract GameStateSystem is System {
 
   function initSnakeBody() public {
     if (gameUserSnakeBody[msg.sender].length == 0) {
-      for (int i = 100; i < 6; i+=100) {
-        gameUserSnakeBody[msg.sender].push(Position(int(60000) - i,int(10000)));
+      for (int i = 1; i <= 6; i++) {
+        gameUserSnakeBody[msg.sender].push(Position(int(60000) - i * 100,int(10000)));
       }
     }
   }

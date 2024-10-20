@@ -26,6 +26,8 @@ interface IGameStateSystem {
 
   function addUser() external;
 
+  function endGame() external;
+
   function gameStateExistsAndRemove(bool remove) external returns (bool);
 
   function moveSnake(int x, int y) external returns (UpdatePosition memory _d);
