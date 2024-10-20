@@ -12,7 +12,9 @@ contract GameStateSystem is System {
 
   mapping(uint32 => GameState) private gameStateData;
 
-
+  function getGameState() public view returns (GameState[] memory) {
+    return gameStateData; //返回所有房间的状态
+  }
   function getLeaderboardData(uint32 gameCode) public view returns (GameState memory) {
     return gameStateData[gameCode];
   }

@@ -11,6 +11,8 @@ import { GameState } from "../../common.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IGameStateSystem {
+  function getGameState() external view returns (GameState[] memory);
+
   function getLeaderboardData(uint32 gameCode) external view returns (GameState memory);
 
   function getDataPlayers(uint32 gameCode) external view returns (address[] memory);

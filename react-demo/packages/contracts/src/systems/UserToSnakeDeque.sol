@@ -33,4 +33,18 @@ contract UserToSnakeDequeSystem is System {
       return _d;
   }
 
+  function getSnakeBodyByPlayer(address player) public view returns (Position[] memory) {
+    return gameUserSnakeBody[player];
+  }
+
+  function getHeaderPosByPlayer(address player) public view returns (Position memory) {
+    return gameUserSnakeBody[player][0];
+  }
+  
+  function moveSnakeByPositon(address player, Position memory newHeadPosition) public {
+      //TOOD 完善
+      gameUserSnakeBody[player].push(newHeadPosition);
+      
+  }
+
 }

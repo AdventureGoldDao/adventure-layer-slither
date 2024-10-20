@@ -23,6 +23,10 @@ contract UsersSystem is System {
     }
   }
 
+  function removeUserFromServer(uint32 gameCode, address player) public {
+    //TODO
+  }
+
   function gameStateExistsAndRemove(uint32 gameCode,bool remove) public returns (bool) {
     address[] memory players = GameCodeToGameState.getPlayers(gameCode);
     for (uint256 i = 0; i < players.length; i++) {
