@@ -78,6 +78,13 @@ export function createSystemCalls(
     // return getComponentValue(UserAccountMapping, playerEntity)
   };
 
+  // const getLeaderboardData = async (gameCode) => {
+  //   return await worldContract.read.getLeaderboardData({
+  //     args: [gameCode], // Arguments required for the function
+  //     account: publicAddress,  // Wallet address
+  //   });
+  // };
+
   const getBindAccountBy = async () => {
     // const tx = await worldContract.write.getBindAccountBy().then((res) => {
     //   console.log('====>', res);

@@ -113,6 +113,7 @@ export async function setupNetwork(mode = 'default') {
   return {
     world,
     components,
+    publicAddress: burnerWalletClient.account.address,
     playerEntity: encodeEntity({ address: "address" }, { address: burnerWalletClient.account.address }),
     publicClient,
     walletClient: burnerWalletClient,

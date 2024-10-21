@@ -1,13 +1,9 @@
-import Denque from "denque";
 import { useState, Dispatch, SetStateAction } from "react";
-
-import "./App.css";
-
+import {
+  ComponentValue,
+} from "@latticexyz/recs";
 import GameState, { Position } from "./game/GameState";
-import Game from "./game/Game";
 import { OrbData } from "./game/orb/Orb";
-import { SnakeData, SNAKE_VELOCITY } from "./game/snake/Snake";
-import Home from "./home/Home";
 
 import MessageType from "./message/messageTypes";
 import {
@@ -21,63 +17,72 @@ import {
   UpdatePositionMessage,
 } from "./message/message";
 
-import { useMUD } from "./MUDContext";
-import { useComponentValue } from "@latticexyz/react";
 /**
- * Creates and returns the overarching HTML element representing the Slither+
- * app at any given moment, appropriately either the home or in-game screen
- * @returns the overarching HTML SLither+ app element
+ * Creates a websocket for communcation with the Slither+ server
+ * @param setScores A funcion that sets the current leaderboard (set of scores) for the game
+ * @param setGameStarted A function that sets whether or not the client has started playing the game
+ * @param setErrorText A function that sets any error message to be rendered on the home page
+ * @param setGameCode A function that sets the current lobby's game code
+ * @param orbSet A list of all orbs stored in metadata form
+ * @param gameState A metadata representation of the current state of the game
+ * @param setGameState A function that sets the current state of the game
+ * @param username The username of the client
+ * @param hasGameCode A boolean representing whether or not the client is
+ * joining an existing game with a game code
+ * @param gameCode The game code entered by the client, if applicable
  */
-export default function App(): JSX.Element {
+export function registerContract(
+  setTimer: Dispatch<SetStateAction<number>>,
+  systemCalls: any,
+  // getSnakeBody: () => Promise<any>,
+  // getLeaderboardData: () => Promise<any>,
+  setScores: Dispatch<SetStateAction<Map<string, number>>>,
+  setGameStarted: Dispatch<SetStateAction<boolean>>,
+  setErrorText: Dispatch<SetStateAction<string>>,
+  setGameCode: Dispatch<SetStateAction<string>>,
+  orbSet: Set<OrbData>,
+  gameState: GameState,
+  setGameState: Dispatch<SetStateAction<GameState>>,
+  username: string,
+  hasGameCode: boolean,
+  gameCode: string = ""
+) {
+  setGameStarted(true);
 
-  const [gameStarted, setGameStarted] = useState(false);
-  const [scores, setScores] = useState(new Map<string, number>());
-  const [gameCode, setGameCode] = useState("");
+  const timer = setInterval(() => {
+    systemCalls.getSnakeBody().then((result) => {
+      console.log('timer getSnakeBody: ', result);
+      // handle update snake body
+      const newSnake = []
+      for (let body of result) {
+        newSnake.push({ x: body.x / 100, y: body.y / 100 })
+      }
+      gameState.snake.snakeBody = newSnake
+      setGameState(gameState);
+    })
 
-  const orbSet = new Set<OrbData>();
+    systemCalls.getLeaderboardData().then((result) => {
+      console.log('timer getLeaderboardData: ', result);
+      // handle update game leaderboard
+      const scores = new Map<string, number>()
+      for (let i of result) {
+        scores.set(i.username, i.score)
+      }
+      setScores(scores);
+    })
 
-  // initial snake
-  const snakeBody: Position[] = [];
-  for (let i = 0; i < 20; i++) {
-    snakeBody.push({ x: 600, y: 100 + 5 * i });
-  }
-  const snake: SnakeData = {
-    snakeBody: new Denque(snakeBody),
-    velocityX: 0,
-    velocityY: SNAKE_VELOCITY,
-  };
-
-  const [gameState, setGameState] = useState<GameState>({
-    snake: snake,
-    otherBodies: new Set<string>([]),
-    orbs: orbSet,
-    scores: new Map(),
-    gameCode: "abc",
-  });
-
-
-  return (
-    <div className="App">
-      {gameStarted ? (
-        <Game
-          gameState={gameState}
-          setGameState={setGameState}
-          scores={scores}
-          gameCode={gameCode}
-          socket={socket}
-        />
-      ) : (
-        <Home
-          setGameStarted={setGameStarted}
-          setScores={setScores}
-          setGameCode={setGameCode}
-          gameState={gameState}
-          setGameState={setGameState}
-          orbSet={orbSet}
-        />
-      )}
-    </div>
-  );
+    systemCalls.getOrbData().then((orbSet) => {
+      console.log('timer getOrbData: ', orbSet);
+      for (let o of orbSet) {
+        o.position.x = o.position.x / 100
+        o.position.y = o.position.y / 100
+      }
+      // console.log("orbSet:",orbSet)
+      gameState.orbs = orbSet;
+      setGameState(gameState);
+    })
+  }, 50)
+  setTimer(timer)
 }
 
 //----------------------------------------------------------------------------
@@ -85,12 +90,9 @@ export default function App(): JSX.Element {
 
 /** Metadata for forming the URL to connect with the server websocket */
 const AppConfig = {
-  PROTOCOL: "wss:",
-  HOST: "slither-demo.adventurelayer.xyz",
-  PORT: "/server",
-  // PROTOCOL: "ws:",
-  // HOST: "//34.228.184.10",
-  // PORT: ":8511",
+  PROTOCOL: "ws:",
+  HOST: "//34.228.184.10",
+  PORT: ":8511",
 };
 
 /** The client's websocket for communication with the server */
@@ -180,7 +182,8 @@ export function registerSocket(
         const otherUserDiedMessage: OtherUserDiedMessage = message;
         const removePositions: Position[] =
           otherUserDiedMessage.data.removePositions;
-        console.log("removePositions", removePositions);
+        // console.log("removePositions");
+        // console.log(removePositions);
         const newGameState: GameState = { ...gameState };
         removePositions.forEach((position: Position) => {
           newGameState.otherBodies.delete(JSON.stringify(position));
