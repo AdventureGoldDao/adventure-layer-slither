@@ -1,26 +1,23 @@
-import { useEffect, Dispatch, SetStateAction } from "react";
+import {Dispatch, SetStateAction, useEffect} from "react";
 
-import GameState, { Position } from "./GameState";
-import Snake, { SnakeData, SNAKE_VELOCITY } from "./snake/Snake";
-import Orb, { OrbData } from "./orb/Orb";
+import GameState, {extractLeaderboardMap, leaderboardEntry, Position} from "./GameState";
+import Snake, {SNAKE_VELOCITY, SnakeData} from "./snake/Snake";
+import Orb, {OrbData} from "./orb/Orb";
 import Border from "./boundary/Boundary";
-import OtherSnake from "./snake/OtherSnake";
-import { useMUD } from "../MUDContext";
-
-import { sendUpdatePositionMessage } from "../message/message";
+import {useMUD} from "../MUDContext";
 
 /**
  * The size of the map. The map is rendered centered on the origin, so
  * the map ranges from -x/2 to x/2 horiziontally, and -y/2 to y/2 vertically
  */
-const canvasSize: Position = { x: 3000, y: 3000 };
+const canvasSize: Position = {x: 3000, y: 3000};
 /** The current position of the client's mouse on the screen */
-const mousePos: Position = { x: 0, y: 0 };
+const mousePos: Position = {x: 0, y: 0};
 /**
  * The offset from the coordinates of the client's snake's head to the
  * middle of the window
  */
-const offset: Position = { x: 0, y: 0 };
+const offset: Position = {x: 0, y: 0};
 // let lastUpdatedPosition: Position = { x: 0, y: 0 };
 // let lastUpdatedTime: number = new Date().getTime();
 
@@ -33,8 +30,10 @@ interface GameCanvasProps {
   gameState: GameState;
   /** A function that sets the current state of the game */
   setGameState: Dispatch<SetStateAction<GameState>>;
-  /** The client's websocket for communication with the Slither+ server */
-  socket: WebSocket;
+  /** A function that sets whether the game has started */
+  setGameStarted: Dispatch<SetStateAction<boolean>>;
+  /** A function that sets the current leaderboard (set of scores) for the game */
+  setScores: Dispatch<SetStateAction<Map<string, number>>>;
 }
 
 /**
@@ -44,19 +43,18 @@ interface GameCanvasProps {
  * @param gameState A metadata representation of the current state of the game
  * @param setGameState A function that sets the current state of the game
  * @param user The username of the client
- * @param websocket The client's websocket for communication with the Slither+ server
+ * @param setGameStarted
  * @returns a rendered representation of the current game map for the client
  */
 export default function GameCanvas({
-  gameState,
-  setGameState,
-  socket,
-}: GameCanvasProps): JSX.Element {
+                                     gameState,
+                                     setGameState,
+                                     setGameStarted,
+                                     setScores,
+                                   }: GameCanvasProps): JSX.Element {
   const {
-    network: {playerEntity},
-    components: {Users},
     systemCalls: {
-      moveSnake
+      moveSnake, endGame, getOrbData, getLeaderboardData
     },
   } = useMUD();
 
@@ -66,11 +64,8 @@ export default function GameCanvas({
   };
 
   const updatePositions = () => {
-    const newGameState: GameState = { ...gameState };
-    const updatedSnake: SnakeData = moveSnakeTick(gameState.snake, socket, moveSnake);
-    // constantly update your own snake using moveSnake
-    newGameState.snake = updatedSnake;
-    setGameState(newGameState);
+    let newGameState: GameState = {...gameState};
+    setGameState(moveSnakeTick(newGameState));
   };
 
   useEffect(() => {
@@ -93,79 +88,75 @@ export default function GameCanvas({
     offset.y = window.innerHeight / 2 - front.y;
   }
 
+  let list: Position[] = [];
+  /**
+   * Changes the given snake's velocity to follow the mouse's position,
+   * and sends the new position to the Slither+ server
+   * @returns the newly updated metadata for the client's snake
+   * @param gameState
+   */
+  const moveSnakeTick = (gameState: GameState): GameState => {
+    // remove last position from the end (to simulate movement)
+    gameState.snake.snakeBody.pop();
+    const front: Position | undefined = gameState.snake.snakeBody.peekFront();
+    if (front !== undefined) {
+      const accel_angle: number = Math.atan2(
+        // find the angle of acceleration based on your current position and the mouse position
+        mousePos.y - offset.y - front.y,
+        mousePos.x - offset.x - front.x
+      );
+      let vel_angle: number = Math.atan2(gameState.snake.velocityY, gameState.snake.velocityX);
+      const angle_diff = mod(accel_angle - vel_angle, 2 * Math.PI);
+      // changes the angle of velocity to move towards the mouse position
+      vel_angle += angle_diff < Math.PI ? 0.1 : -0.1;
+
+      // calculate new velocity
+      gameState.snake.velocityX = SNAKE_VELOCITY * Math.cos(vel_angle);
+      gameState.snake.velocityY = SNAKE_VELOCITY * Math.sin(vel_angle);
+
+      // find new position of head based on velocity
+      const newPosition: Position = {
+        x: front.x + gameState.snake.velocityX,
+        y: front.y + gameState.snake.velocityY,
+      };
+
+      gameState.snake.snakeBody.unshift({x: newPosition.x, y: newPosition.y});
+      list.push({x: Math.round(newPosition.x * 100), y: Math.round(newPosition.y * 100)});
+
+      if (list.length > 6) {
+        moveSnake(list).then((res: { status: number; add: Position[]; }) => {
+          if (res.status == 2) {
+            endGame();
+            setGameStarted(false);
+          } else {
+            if (res.add.length > 0) {
+              res.add.forEach((bodyPart: Position) => {
+                gameState.snake.snakeBody.push({x: bodyPart.x / 100.0, y: bodyPart.y / 100.0});
+              });
+              getOrbData().then((orbs: Set<OrbData>) => {
+                gameState.orbs = orbs;
+              })
+              getLeaderboardData().then((sco: leaderboardEntry[]) => {
+                gameState.scores = extractLeaderboardMap(sco);
+              })
+            }
+          }
+        })
+        list = [];
+      }
+    }
+    return gameState;
+  }
+
   return (
     <div>
       <Snake snake={gameState.snake} offset={offset} />
       {Array.from(gameState.orbs).map((orb: OrbData, ind: number) => (
         <Orb orbInfo={orb} offset={offset} key={ind} />
       ))}
-      <OtherSnake positions={gameState.otherBodies} offset={offset} />
-      snakes
       <Border boundaries={canvasSize} offset={offset} />
     </div>
   );
-}
-
-let list = [];
-/**
- * Changes the given snake's velocity to follow the mouse's position,
- * and sends the new position to the Slither+ server
- * @param snake A metadata representation of the client's snake
- * @param socket The client's websocket for communication with the Slither+ server
- * @returns the newly updated metadata for the client's snake
- */
-export function moveSnakeTick(snake: SnakeData, socket: WebSocket,contractFunc:(x: number, y: number) => void): SnakeData {
-  // remove last position from the end (to simulate movement)
-  const removePosition: Position | undefined = snake.snakeBody.pop();
-  const front: Position | undefined = snake.snakeBody.peekFront();
-  if (front !== undefined) {
-    const accel_angle: number = Math.atan2(
-      // find the angle of acceleration based on your current position and the mouse position
-      mousePos.y - offset.y - front.y,
-      mousePos.x - offset.x - front.x
-    );
-    let vel_angle: number = Math.atan2(snake.velocityY, snake.velocityX);
-    const angle_diff = mod(accel_angle - vel_angle, 2 * Math.PI);
-    // changes the angle of velocity to move towards the mouse position
-    vel_angle += angle_diff < Math.PI ? 0.1 : -0.1;
-
-    // calculate new velocity
-    snake.velocityX = SNAKE_VELOCITY * Math.cos(vel_angle);
-    snake.velocityY = SNAKE_VELOCITY * Math.sin(vel_angle);
-
-    // find new position of head based on velocity
-    const newPosition: Position = {
-      x: front.x + snake.velocityX,
-      y: front.y + snake.velocityY,
-    };
-
-    // contractFunc(newPosition.x * 100, newPosition.y * 100)
-    // add new position to the front (to simulate movement)
-    snake.snakeBody.unshift({ x: newPosition.x, y: newPosition.y });
-
-    if (list.length > 6){
-      console.log("moveSnake: ",contractFunc(list))
-      list = [];
-    }else{
-      const x1 = Math.round(Number(newPosition.x.toFixed(2)) * 100);
-      const y1 = Math.round(Number(newPosition.y.toFixed(2)) * 100);
-      list.push({x:x1,y: y1})
-    }
-
-    if (removePosition !== undefined) {
-      const toAdd: Position = {
-        x: Number(newPosition.x.toFixed(2)),
-        y: Number(newPosition.y.toFixed(2)),
-      };
-      const toRemove: Position = {
-        x: Number(removePosition.x.toFixed(2)),
-        y: Number(removePosition.y.toFixed(2)),
-      };
-      // send message to server with add and remove positions
-      sendUpdatePositionMessage(socket, toAdd, toRemove);
-    }
-  }
-  return snake;
 }
 
 /**

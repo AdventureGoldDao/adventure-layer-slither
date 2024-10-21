@@ -63,13 +63,9 @@ export function createSystemCalls(
     return await worldContract.read.getLeaderboardData();
   };
 
-  const getDataPlayers = async () => {
-    return await worldContract.read.getDataPlayers();
-  };
-
-  const moveSnake = async (list:any) => {
+  const moveSnake = async (list: any) => {
     const tx = await worldContract.write.moveSnake([list]);
-    return await waitForTransaction(tx);
+    return await worldContract.read.getUpdatePosition([walletClient.account.address]);
   };
 
   const getBindAccount = async () => {
@@ -109,12 +105,12 @@ export function createSystemCalls(
 
   return {
     stGame,
+    endGame,
     moveSnake,
     getSnakeBody,
     getOrbData,
     getLeaderboardData,
     adventureHeatbeat,
-    getDataPlayers,
     getBindAccount,
     getBindAccountBy,
     getUserBindAccount,

@@ -1,23 +1,21 @@
-import React, { useState, Dispatch, SetStateAction, useEffect } from "react";
+import React, {Dispatch, SetStateAction, useEffect, useState} from "react";
 
 import "./Home.css";
 
-import { registerSocket } from "../App";
-import { registerContract } from "../event";
 import GameState from "../game/GameState";
-import { OrbData } from "../game/orb/Orb";
+import {OrbData} from "../game/orb/Orb";
 import HowToPlay from "./HowToPlay";
-import { Kbd, Button, Box, Text, VStack, HStack, Input } from "@chakra-ui/react";
+import {Box, Button, HStack, Text, VStack} from "@chakra-ui/react";
 
-import { ethers } from 'ethers';
-import web3, { Web3 } from 'web3';
-import { setupCustom } from "../mud/setup";
-import { setBurnerPrivateKey } from "../mud/util";
-import { useCustomMUD, useMUD } from "../MUDContext";
-import { useComponentValue } from "@latticexyz/react";
+import {ethers} from 'ethers';
+import {Web3} from 'web3';
+import {setupCustom} from "../mud/setup";
+import {setBurnerPrivateKey} from "../mud/util";
+import {useCustomMUD, useMUD} from "../MUDContext";
+import {useComponentValue} from "@latticexyz/react";
 
-import { getNetworkConfig } from "../mud/getNetworkConfig";
-import { shortenAddress } from "@usedapp/core";
+import {getNetworkConfig} from "../mud/getNetworkConfig";
+import {shortenAddress} from "@usedapp/core";
 
 async function switchNetwork(targetChainId) {
   try {
@@ -46,7 +44,7 @@ async function addNetwork(chainId) {
       symbol: 'AGLD',
       decimals: 18,
     },
-    rpcUrls: ['https://slither-demo.adventurelayer.xyz/shard'], // 替换为目标网络的 RPC URL
+    rpcUrls: ['http://127.0.0.1:8587'], // 替换为目标网络的 RPC URL
     // blockExplorerUrls: ['https://sepolia.etherscan.io'], // 替换为区块浏览器 URL
   };
 
@@ -119,16 +117,12 @@ function ControlledInput({
 interface HomeProps {
   /** A function that sets whether or not the client has started playing the game */
   setGameStarted: Dispatch<SetStateAction<boolean>>;
-  /** A function that sets the current leaderboard (set of scores) for the game */
-  setScores: Dispatch<SetStateAction<Map<string, number>>>;
   /** A function that sets the game code for the lobby the client is playing in */
   setGameCode: Dispatch<SetStateAction<string>>;
   /** A metadata representation of the current state of the game */
   gameState: GameState;
   /** A function that sets the current state of the game */
   setGameState: Dispatch<SetStateAction<GameState>>;
-  /** A list of all orbs stored in metadata form */
-  orbSet: Set<OrbData>;
   accountSetup: any;
   setAccountSetup: Dispatch<SetStateAction<any>>;
 }
@@ -140,34 +134,28 @@ interface HomeProps {
  * custom, already live game, with a button to join said game
  *
  * @param setGameStarted A function that sets whether or not the client has started playing the game
- * @param setScores A function that sets the current leaderboard (set of scores) for the game
  * @param setGameCode A function that sets the game code for the lobby the client is playing in
  * @param gameState A metadata representation of the current state of the game
  * @param setGameState A function that sets the current state of the game
  * @param orbSet A list of all orbs stored in metadata form
+ * @param accountSetup
+ * @param setAccountSetup
  * @returns the home page of the Slither+ game
  */
 export default function Home({
   setGameStarted,
-  setScores,
   setGameCode,
   gameState,
   setGameState,
-  orbSet,
   accountSetup,
   setAccountSetup,
 }: HomeProps): JSX.Element {
   const {
-    network: { playerEntity },
-    components: { Users },
     systemCalls: {
-      stGame, adventureHeatbeat, moveSnake, getDataPlayers, getOrbData, getLeaderboardData, getSnakeBody
+      stGame, getOrbData,
     },
   } = useMUD();
-  const { systemCalls } = useMUD()
   const { setMudContext } = useCustomMUD();
-  const uData = useComponentValue(Users, playerEntity);
-  console.log("uData:", uData)
 
   const [timer, setTimer] = useState(null);
   const [username, setUsername] = useState("");
@@ -340,86 +328,18 @@ export default function Home({
     // if (!account) {
     const address = await connectWallet();
     setAccount(address);
-    // }
-
-    doSol();
+    await doSol();
     setErrorText("");
-
-    try {
-      // registerContract(
-      //   setTimer,
-      //   systemCalls,
-      //   setScores,
-      //   setGameStarted,
-      //   setErrorText,
-      //   setGameCode,
-      //   orbSet,
-      //   gameState,
-      //   setGameState,
-      //   username,
-      //   false,
-      // );
-
-      registerSocket(
-        setScores,
-        setGameStarted,
-        setErrorText,
-        setGameCode,
-        orbSet,
-        gameState,
-        setGameState,
-        username,
-        false,
-      );
-    } catch (e) {
-      // check server status
-      setErrorText("Error: Could not connect to server!");
-    }
   };
 
   const doSol = async () => {
     const r = await stGame(username)
     console.log("adduser success:", r)
     setGameCode("12345");
-    // setGameStarted(true)
-    // console.log("init state:", await adventureHeatbeat())
-    console.log("getOrbData: ", await getOrbData())
-    console.log("getLeaderboardData: ", await getLeaderboardData())
-    console.log("getSnakeBody: ", await getSnakeBody())
-    let list = [];
-    for (let i = 0; i < 10; i++) {
-      list.push({ x: 60300 + i * 100, y: 10000 });
-    }
-    console.log("moveSnake: ", await moveSnake(list))
-    console.log("getSnakeBody: ", await getSnakeBody())
+    setGameStarted(true)
+    gameState.orbs = await getOrbData();
+    setGameState(gameState);
   }
-
-  // registers the client's websocket to handle joining a game with a code
-  const startGameWithCode = (): void => {
-    if (username.trim().length === 0) {
-      //check that name is not empty
-      setErrorText("Your username should be non-empty!");
-      return;
-    }
-    setErrorText("");
-    try {
-      // registerSocket(
-      //   setScores,
-      //   setGameStarted,
-      //   setErrorText,
-      //   setGameCode,
-      //   orbSet,
-      //   gameState,
-      //   setGameState,
-      //   username,
-      //   true,
-      //   inputGamecode
-      // );
-    } catch (e) {
-      // check server status
-      setErrorText("Error: Could not connect to server!");
-    }
-  };
 
   const connectGameAccount = async () => {
     if (window.ethereum) {
@@ -510,11 +430,7 @@ export default function Home({
           value={username}
           setValue={setUsername}
           onEnter={() => {
-            if (inputGamecode.length === 0) {
-              startNewGame();
-            } else {
-              startGameWithCode();
-            }
+            startNewGame();
           }}
           placeholder="Type your username here:"
           className="username-input"

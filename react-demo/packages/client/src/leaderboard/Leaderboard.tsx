@@ -1,5 +1,5 @@
 import React from "react";
-import { leaderboardEntry } from "../message/message";
+import { leaderboardEntry } from "../game/GameState";
 import "./Leaderboard.css";
 
 /**

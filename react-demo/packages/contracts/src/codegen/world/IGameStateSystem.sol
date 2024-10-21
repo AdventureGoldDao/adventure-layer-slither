@@ -20,7 +20,11 @@ interface IGameStateSystem {
 
   function getSnakeBody(address addr) external view returns (Position[] memory);
 
+  function getUpdatePosition(address addr) external view returns (UpdatePosition memory);
+
   function initSnakeBody() external;
+
+  function getNewBodyPartPosition(int len) external returns (Position[] memory _d);
 
   function stGame(string memory name) external;
 
@@ -30,13 +34,13 @@ interface IGameStateSystem {
 
   function gameStateExistsAndRemove(bool remove) external returns (bool);
 
-  function moveSnake(Position[] memory list) external returns (UpdatePosition memory _d);
+  function moveSnake(Position[] memory list) external;
 
   function adventureHeatbeat() external;
 
   function generateColor(int i) external view returns (string memory);
 
-  function randomCoordinate(int i) external view returns (int);
+  function randomCoordinate(int i) external view returns (int32);
 
   function generateOrbSize(int i) external view returns (string memory);
 
