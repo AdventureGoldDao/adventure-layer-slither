@@ -7,9 +7,9 @@ import { registerContract } from "../event";
 import GameState from "../game/GameState";
 import { OrbData } from "../game/orb/Orb";
 import HowToPlay from "./HowToPlay";
-import { Kbd } from "@chakra-ui/react";
+import { Kbd, Button, Box, Text, VStack, HStack, Input } from "@chakra-ui/react";
 
-import { ethers } from "ethers";
+import { ethers } from 'ethers';
 import web3, { Web3 } from 'web3';
 import { setupCustom } from "../mud/setup";
 import { setBurnerPrivateKey } from "../mud/util";
@@ -129,6 +129,8 @@ interface HomeProps {
   setGameState: Dispatch<SetStateAction<GameState>>;
   /** A list of all orbs stored in metadata form */
   orbSet: Set<OrbData>;
+  accountSetup: any;
+  setAccountSetup: Dispatch<SetStateAction<any>>;
 }
 
 /**
@@ -152,12 +154,14 @@ export default function Home({
   gameState,
   setGameState,
   orbSet,
+  accountSetup,
+  setAccountSetup,
 }: HomeProps): JSX.Element {
   const {
-    network: {playerEntity},
-    components: {Users},
+    network: { playerEntity },
+    components: { Users },
     systemCalls: {
-      stGame,adventureHeatbeat, moveSnake,getDataPlayers,getOrbData,getLeaderboardData,getSnakeBody
+      stGame, adventureHeatbeat, moveSnake, getDataPlayers, getOrbData, getLeaderboardData, getSnakeBody
     },
   } = useMUD();
   const { systemCalls } = useMUD()
@@ -168,25 +172,73 @@ export default function Home({
   const [timer, setTimer] = useState(null);
   const [username, setUsername] = useState("");
   const [account, setAccount] = useState("");
-  const [accountSetup, setAccountSetup] = useState(null);
+  const [isReady, setIsReady] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const [privateKey, setPrivateKey] = useState("");
+  const [privateBalance, setPrivateBalance] = useState(0);
+  const [privateAddress, setPrivateAddress] = useState('');
   const [inputGamecode, setInputGamecode] = useState("");
   const [errorText, setErrorText] = useState("");
   const [displayHowToPlay, setDisplayHowToPlay] = useState(false);
 
-  useEffect(() => {
-    window.ethereum.request({ method: "eth_requestAccounts" }).then(() => {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      signer.getAddress().then(address => {
-        setAccount(address)
-      });
-    })
+  const web3 = new Web3(window.ethereum);
+  const initWalletAddress = async () => {
+    const networkConfig = await getNetworkConfig()
+    const targetChainId = networkConfig.chainId;
+    const chainId = await web3.eth.getChainId();
+    if (chainId !== BigInt(targetChainId)) {
+      return
+    }
 
-    getNetworkConfig().then(networkConfig => {
-      // console.log('Private', networkConfig.privateKey)
+    // await window.ethereum.request({ method: "eth_requestAccounts" });
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const address = await signer.getAddress();
+
+    let setupResult = accountSetup
+    if (!accountSetup) {
+      setupResult = await setupCustom('wallet')
+      setAccountSetup(setupResult)
+    }
+
+    const bindAccount = await setupResult.systemCalls.getUserBindAccount(address)
+    // console.log('Load Private:', bindAccount)
+
+    let linkedAccount = networkConfig.privateKey
+    if (bindAccount && bindAccount !== networkConfig.privateKey) {
+      linkedAccount = bindAccount
+      setPrivateKey(bindAccount)
+      setBurnerPrivateKey(bindAccount)
+      networkConfig.privateKey = bindAccount
+      const existResult = await setupCustom('default')
+      setMudContext(existResult)
+    } else if (!bindAccount && networkConfig.privateKey) {
       setPrivateKey(networkConfig.privateKey);
-    })
+      await setupResult.systemCalls.setBindAccount(networkConfig.privateKey)
+    }
+    setAccount(address);
+    setIsConnected(true);
+
+    // Create a wallet instance from the private key
+    const linkedWallet = new ethers.Wallet(linkedAccount);
+
+    // Get the wallet address
+    const linkedAddress = linkedWallet.address;
+    setPrivateAddress(linkedAddress)
+
+    const linkedBalance = await web3.eth.getBalance(linkedAddress);
+    // const balanceValue = new Decimal(linkedBalance.toString()).div(1000000000000000000).toFixed(5)
+    const balanceValue = ethers.utils.formatEther(linkedBalance)
+    setPrivateBalance(balanceValue);
+
+    if (balanceValue >= 1) {
+      setIsReady(true);
+    }
+    console.log('Init', linkedAddress, balanceValue)
+  }
+
+  useEffect(() => {
+    initWalletAddress()
 
     // systemCalls.getSnakeBody().then((result) => {
     //   console.log('getSnakeBody:', result)
@@ -214,13 +266,13 @@ export default function Home({
     try {
       const networkConfig = await getNetworkConfig();
       const targetChainId = networkConfig.chainId;
-      const web3 = new Web3(window.ethereum);
       const chainId = await web3.eth.getChainId();
       if (chainId !== BigInt(targetChainId)) {
         try {
           await switchNetwork(targetChainId);
         } catch (error) {
-          console.error("Failed to switch network:", error);
+          setErrorText("Failed to switch network:", error);
+          return;
         }
       }
 
@@ -250,6 +302,7 @@ export default function Home({
           console.log('Read Exist Account')
           setPrivateKey(bindAccount)
           setBurnerPrivateKey(bindAccount)
+          networkConfig.privateKey = bindAccount
           const existResult = await setupCustom('default')
           setMudContext(existResult)
         } else if (!bindAccount) {
@@ -271,6 +324,14 @@ export default function Home({
 
   // registers the client's websocket to handle joining a new game
   const startNewGame = async () => {
+    if (!isConnected) {
+      setErrorText("Your wallet was not connected!");
+      return;
+    }
+    if (!isReady) {
+      setErrorText("You need to recharge game account to continue!");
+      return;
+    }
     if (username.trim().length === 0) {
       setErrorText("Your username should be non-empty!");
       return;
@@ -322,15 +383,15 @@ export default function Home({
     setGameCode("12345");
     // setGameStarted(true)
     // console.log("init state:", await adventureHeatbeat())
-    console.log("getOrbData: ",await getOrbData())
-    console.log("getLeaderboardData: ",await getLeaderboardData())
-    console.log("getSnakeBody: ",await getSnakeBody())
+    console.log("getOrbData: ", await getOrbData())
+    console.log("getLeaderboardData: ", await getLeaderboardData())
+    console.log("getSnakeBody: ", await getSnakeBody())
     let list = [];
     for (let i = 0; i < 10; i++) {
-      list.push({x:60300 + i*100,y: 10000});
+      list.push({ x: 60300 + i * 100, y: 10000 });
     }
-    console.log("moveSnake: ",await moveSnake(list))
-    console.log("getSnakeBody: ",await getSnakeBody())
+    console.log("moveSnake: ", await moveSnake(list))
+    console.log("getSnakeBody: ", await getSnakeBody())
   }
 
   // registers the client's websocket to handle joining a game with a code
@@ -360,6 +421,60 @@ export default function Home({
     }
   };
 
+  const connectGameAccount = async () => {
+    if (window.ethereum) {
+      const networkConfig = await getNetworkConfig()
+      const targetChainId = networkConfig.chainId;
+      const chainId = await web3.eth.getChainId();
+      if (chainId !== BigInt(targetChainId)) {
+        try {
+          await switchNetwork(targetChainId);
+        } catch (error) {
+          setErrorText("Failed to switch network:", error);
+          return;
+        }
+      }
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const accounts = await provider.send('eth_requestAccounts', []);
+      const walletAddress = accounts[0]
+
+      if (walletAddress) {
+        initWalletAddress();
+      }
+    } else {
+      setErrorText('Please install MetaMask or other Ethereum wallet');
+    }
+  };
+
+  // fetch balance
+  const fetchBalance = async () => {
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const balance = await provider.getBalance(privateAddress);
+      setPrivateBalance(ethers.utils.formatEther(balance));
+    }
+  };
+
+  // transfer funds
+  const transferFunds = async () => {
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      try {
+        const tx = await signer.sendTransaction({
+          to: privateAddress,
+          value: ethers.utils.parseEther('0.02'), // Set amount to transfer
+        });
+        await tx.wait();
+        // alert('Transfer complete');
+      } catch (error) {
+        setErrorText('Transfer failed: ' + error.message);
+      }
+    }
+  };
+
   return (
     <div className="main-container">
       <div className="how-to-play-display">
@@ -381,9 +496,10 @@ export default function Home({
             +
           </span>
         </h1>
-        <div style={{marginTop: "12px"}}>
+        {/* <div style={{marginTop: "12px"}}>
           <Kbd>{ account ? shortenAddress(account) : 'offline'}</Kbd>
-        </div>
+          <Kbd>{ privateAddress ? shortenAddress(privateAddress) : 'offline'}</Kbd>
+        </div> */}
         <h2
           className="username-prompt"
           aria-label="Prompt: Enter your username"
@@ -404,47 +520,71 @@ export default function Home({
           className="username-input"
           aria-label="Username input box"
         />
-        <p className="error-text">{errorText}</p>
-        <div className="container">
+        {errorText && <p className="error-text">{errorText}</p>}
+        {!account && <Box p={5} bg="gray.800" color="white" borderRadius="md" width="50%" margin={"5% auto"}>
+          {/* Connected Wallet */}
+          <VStack spacing={4} align="stretch">
+            {/* Connect Wallet Button */}
+            <Button colorScheme="red" onClick={connectGameAccount}>
+              {account ? 'Connected' : 'Connect To Start Game'}
+            </Button>
+          </VStack>
+        </Box>}
+        {account && privateAddress && <Box p={5} bg="gray.800" color="white" borderRadius="md">
+          {/* Connected Wallet */}
+          <VStack spacing={4} align="stretch">
+            <Box>
+              <Text fontSize="lg" mb={2}>
+                Connected Wallet:
+              </Text>
+              <Text bg="gray.700" p={2} borderRadius="md" mb={2}>
+                { account && shortenAddress(account) || 'No wallet connected'}
+              </Text>
+            </Box>
+
+            {/* Associated Wallet & Balance */}
+            <Box>
+              <Text fontSize="lg" mb={2}>
+                Associated Wallet:
+              </Text>
+              <HStack justify="space-between" bg="gray.700" p={2} borderRadius="md">
+                <Text>{privateAddress && shortenAddress(privateAddress)}</Text>
+                <Text>{privateBalance} AGLD</Text>
+                <Button colorScheme="teal" size="sm" onClick={fetchBalance}>
+                  Refresh Balance
+                </Button>
+              </HStack>
+            </Box>
+
+            {/* Transfer Button */}
+            <Button
+              colorScheme="blue"
+              onClick={transferFunds}
+              isDisabled={!account}
+            >
+              Transfer 0.2 AGLD to Associated Wallet
+            </Button>
+
+            {/* Connect Wallet Button */}
+            {/* <Button colorScheme="teal" onClick={connectWallet}>
+              {account ? 'Connected' : 'Connect Wallet'}
+            </Button> */}
+          </VStack>
+        </Box>}
+        {isConnected && <div className="container">
           <div className="row">
             <div className="col-lg-12 col-md-12 col-sm-12">
               <button
                 className="btn btn-light new-game-button"
                 aria-label="New Game Button"
+                disabled={!isReady}
                 onClick={startNewGame}
               >
                 Create a new game
               </button>
             </div>
-            {/* <div className="col-lg-2 col-md-2 col-sm-12">
-              <div className="or-text">OR</div>
-            </div>
-            <div className="col-lg-5 col-md-5 col-sm-12">
-              <h4
-                className="join-with-gamecode-text"
-                aria-label="Prompt: Join with a game code"
-              >
-                Join with a game code
-              </h4>
-              <ControlledInput
-                value={inputGamecode}
-                setValue={setInputGamecode}
-                onEnter={startGameWithCode}
-                placeholder="Enter gamecode here:"
-                className="gamecode-input"
-                aria-label="Gamecode input box"
-              />
-              <br />
-              <button
-                className="btn btn-outline-light"
-                aria-label="Join game button"
-                onClick={startGameWithCode}
-              >
-                Join with a game code
-              </button>
-            </div> */}
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );

@@ -30,6 +30,7 @@ import { useComponentValue } from "@latticexyz/react";
  */
 export default function App(): JSX.Element {
 
+  const [accountSetup, setAccountSetup] = useState(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [scores, setScores] = useState(new Map<string, number>());
   const [gameCode, setGameCode] = useState("");
@@ -74,6 +75,8 @@ export default function App(): JSX.Element {
           gameState={gameState}
           setGameState={setGameState}
           orbSet={orbSet}
+          accountSetup={accountSetup}
+          setAccountSetup={setAccountSetup}
         />
       )}
     </div>

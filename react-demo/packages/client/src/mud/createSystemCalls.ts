@@ -96,7 +96,7 @@ export function createSystemCalls(
 
   const getUserBindAccount = async (address) => {
     return await worldContract.read.getUserBindAccount([address]).then((res) => {
-      console.log('====>', res);
+      // console.log('====>', res);
       return res
     });
   };
