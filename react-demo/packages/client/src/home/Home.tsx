@@ -462,7 +462,12 @@ export default function Home({
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const balance = await provider.getBalance(privateAddress);
-      setPrivateBalance(ethers.utils.formatEther(balance));
+      const balanceAmount = ethers.utils.formatEther(balance);
+      setPrivateBalance(balanceAmount);
+
+      if (balanceAmount >= 0.2) {
+        setIsReady(true);
+      }
     }
   };
 
@@ -478,6 +483,8 @@ export default function Home({
           value: ethers.utils.parseEther('0.2'), // Set amount to transfer
         });
         await tx.wait();
+
+        fetchBalance()
         // alert('Transfer complete');
       } catch (error) {
         setErrorText('Transfer failed: ' + error.message);
