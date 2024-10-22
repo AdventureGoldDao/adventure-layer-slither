@@ -246,6 +246,10 @@ export default function Home({
   useEffect(() => {
     initWalletAddress()
 
+    getNetworkConfig().then(networkConfig => {
+      setPrivateKey(networkConfig.privateKey)
+    })
+
     // systemCalls.getSnakeBody().then((result) => {
     //   console.log('getSnakeBody:', result)
     // })
@@ -311,7 +315,7 @@ export default function Home({
         console.log('BindAccount:', bindAccount)
 
         if (bindAccount && bindAccount !== privateKey) {
-          console.log('Read Exist Account')
+          console.log(`Read Exist Account`)
           setPrivateKey(bindAccount)
           setBurnerPrivateKey(bindAccount)
           networkConfig.privateKey = bindAccount
@@ -326,7 +330,6 @@ export default function Home({
         setErrorText('Failed to connect wallet.')
       }
 
-      // setMudContext
       return address
     } catch (error) {
       setErrorText('Failed to connect wallet.')
