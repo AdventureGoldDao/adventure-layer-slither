@@ -11,13 +11,16 @@ import { Kbd, Button, Box, Text, VStack, HStack, Input } from "@chakra-ui/react"
 
 import { ethers } from 'ethers';
 import web3, { Web3 } from 'web3';
+import { toBytes } from 'viem';
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { setupCustom } from "../mud/setup";
-import { setBurnerPrivateKey } from "../mud/util";
+import { setBurnerPrivateKey, setConnectedAccount, getConnectedAccount } from "../mud/util";
 import { useCustomMUD, useMUD } from "../MUDContext";
 import { useComponentValue } from "@latticexyz/react";
 
 import { getNetworkConfig } from "../mud/getNetworkConfig";
 import { shortenAddress } from "@usedapp/core";
+import mudConfig from "contracts/mud.config";
 
 async function switchNetwork(targetChainId) {
   try {
@@ -164,13 +167,14 @@ export default function Home({
       stGame, adventureHeatbeat, moveSnake, getDataPlayers, getOrbData, getLeaderboardData, getSnakeBody
     },
   } = useMUD();
-  const { systemCalls } = useMUD()
+  const mudResult = useMUD()
   const { setMudContext } = useCustomMUD();
   const uData = useComponentValue(Users, playerEntity);
   console.log("uData:", uData)
 
   const [timer, setTimer] = useState(null);
   const [username, setUsername] = useState("");
+  const [installDev, setInstallDev] = useState(false);
   const [account, setAccount] = useState("");
   const [isReady, setIsReady] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -183,6 +187,35 @@ export default function Home({
 
   // const ethProvider = window.ethereum;
   const web3 = new Web3(window.ethereum);
+
+  const detectNetworkPrivate = async (setupResult: any, account: string, privateKey: any) => {
+    const networkConfig = await getNetworkConfig()
+    let targetPrivate = privateKey
+    let pk = ethers.utils.hexZeroPad(ethers.utils.arrayify(privateKey), 32)
+    // ethers.utils.formatBytes32String(privateKey)
+    const bindAddress = await setupResult.systemCalls.getPrivateBindAddress(pk)
+    const targetResult = mudResult
+    if (bindAddress && bindAddress !== account && ethers.constants.AddressZero !== bindAddress ) {
+      targetPrivate = generatePrivateKey();
+
+      console.log(bindAddress, account)
+      alert(`Generate New Private Key: ${targetPrivate}`)
+      setPrivateKey(targetPrivate)
+      setBurnerPrivateKey(targetPrivate)
+      networkConfig.privateKey = targetPrivate
+      const newResult = await setupCustom('default')
+      setMudContext(newResult)
+      targetResult = newResult
+    }
+
+    setPrivateKey(targetPrivate);
+    await setupResult.systemCalls.setBindAccountNotExist(targetPrivate, pk)
+    return {
+      privateKey: targetPrivate,
+      setupResult: targetResult,
+    }
+  }
+
   const initWalletAddress = async () => {
     const networkConfig = await getNetworkConfig()
     const targetChainId = networkConfig.chainId;
@@ -195,6 +228,13 @@ export default function Home({
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const address = await signer.getAddress();
+    if (!address) {
+      return
+    }
+    const existAddress = getConnectedAccount();
+    if (existAddress !== address) {
+      return
+    }
     // const accounts = await web3.eth.getAccounts();
     // if (!accounts || !accounts.length) {
     //   return
@@ -210,6 +250,7 @@ export default function Home({
     const bindAccount = await setupResult.systemCalls.getUserBindAccount(address)
     // console.log('Load Private:', bindAccount)
 
+    let currentResult = mudResult
     let linkedAccount = networkConfig.privateKey
     if (bindAccount && bindAccount !== networkConfig.privateKey) {
       linkedAccount = bindAccount
@@ -218,10 +259,18 @@ export default function Home({
       networkConfig.privateKey = bindAccount
       const existResult = await setupCustom('default')
       setMudContext(existResult)
+      currentResult = existResult
     } else if (!bindAccount && networkConfig.privateKey) {
-      setPrivateKey(networkConfig.privateKey);
-      await setupResult.systemCalls.setBindAccount(networkConfig.privateKey)
+      // setPrivateKey(networkConfig.privateKey);
+      const detectResult = await detectNetworkPrivate(setupResult, address, networkConfig.privateKey)
+      if (!detectResult) {
+        return;
+      }
+      linkedAccount = detectResult.privateKey
+      currentResult = detectResult.setupResult
+      // await setupResult.systemCalls.setBindAccount(networkConfig.privateKey)
     }
+
     setAccount(address);
     setIsConnected(true);
 
@@ -241,13 +290,29 @@ export default function Home({
       setIsReady(true);
     }
     console.log('Init', linkedAddress, balanceValue)
+
+    if (!installDev) {
+      const { mount: mountDevTools } = await import("@latticexyz/dev-tools");
+      mountDevTools({
+        config: mudConfig,
+        publicClient: currentResult.network.publicClient,
+        walletClient: currentResult.network.walletClient,
+        latestBlock$: currentResult.network.latestBlock$,
+        storedBlockLogs$: currentResult.network.storedBlockLogs$,
+        worldAddress: currentResult.network.worldContract.address,
+        worldAbi: currentResult.network.worldContract.abi,
+        write$: currentResult.network.write$,
+        recsWorld: currentResult.network.world,
+      });
+      setInstallDev(true);
+    }
   }
 
   useEffect(() => {
-    initWalletAddress()
-
     getNetworkConfig().then(networkConfig => {
       setPrivateKey(networkConfig.privateKey)
+
+      initWalletAddress()
     })
 
     // systemCalls.getSnakeBody().then((result) => {
@@ -323,7 +388,8 @@ export default function Home({
           setMudContext(existResult)
         } else if (!bindAccount) {
           console.log('Set New Account')
-          await setupResult.systemCalls.setBindAccount(privateKey)
+          await detectNetworkPrivate(accountSetup, account, privateKey)
+          // await setupResult.systemCalls.setBindAccount(privateKey)
         }
       } catch (err) {
         console.log('BindAccount Err', err)
@@ -464,6 +530,7 @@ export default function Home({
       const walletAddress = await signer.getAddress();
 
       if (walletAddress) {
+        setConnectedAccount(walletAddress)
         initWalletAddress();
       }
     } else {

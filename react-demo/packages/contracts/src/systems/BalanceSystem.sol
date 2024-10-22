@@ -6,7 +6,7 @@ import { Balance } from "../codegen/index.sol";
 
 contract BalanceSystem is System {
 
-    address public owner;
+    address private owner;
     uint256 public gameFee = 0.01 ether; // define game fee
 
     event GameStartedRecharge(address indexed player);

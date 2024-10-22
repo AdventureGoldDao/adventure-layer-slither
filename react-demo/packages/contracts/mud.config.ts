@@ -53,6 +53,13 @@ export default defineWorld({
       },
       key: ["player"],
     },
+    PrivateKeyMapping: {
+      schema: {
+        privateKey: "bytes32",
+        player: "address",
+      },
+      key: ["privateKey"],
+    },
   },
 });
 
