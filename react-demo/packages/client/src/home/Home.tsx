@@ -181,6 +181,7 @@ export default function Home({
   const [errorText, setErrorText] = useState("");
   const [displayHowToPlay, setDisplayHowToPlay] = useState(false);
 
+  // const ethProvider = window.ethereum;
   const web3 = new Web3(window.ethereum);
   const initWalletAddress = async () => {
     const networkConfig = await getNetworkConfig()
@@ -284,6 +285,7 @@ export default function Home({
       let address = account
       if (!account) {
         await window.ethereum.request({ method: "eth_requestAccounts" });
+
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         address = await signer.getAddress();
@@ -445,9 +447,18 @@ export default function Home({
         }
       }
 
+      // const provider = new ethers.providers.Web3Provider(window.ethereum);
+      // let cmdGetAccount = 'eth_requestAccounts'
+      // if (ethProvider.isMetaMask) {
+      // } else if (ethProvider.isPhantom) {
+      //   cmdGetAccount = 'eth_accounts'
+      // }
+      // const accounts = await provider.send(`${cmdGetAccount}`, []);
+      // const walletAddress = accounts[0]
+      await window.ethereum.request({ method: "eth_requestAccounts" });
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const accounts = await provider.send('eth_requestAccounts', []);
-      const walletAddress = accounts[0]
+      const signer = provider.getSigner();
+      const walletAddress = await signer.getAddress();
 
       if (walletAddress) {
         initWalletAddress();
