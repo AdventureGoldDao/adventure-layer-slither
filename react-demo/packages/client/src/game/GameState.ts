@@ -18,6 +18,12 @@ export interface leaderboardEntry {
   score: number;
 }
 
+export interface moveUpData {
+  status: number;
+  score: number;
+  orbIds: number[];
+}
+
 /**
  * An interface representing the state of the client's game
  */

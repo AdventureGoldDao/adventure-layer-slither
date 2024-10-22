@@ -22,10 +22,6 @@ interface IGameStateSystem {
 
   function getUpdatePosition(address addr) external view returns (UpdatePosition memory);
 
-  function initSnakeBody() external;
-
-  function getNewBodyPartPosition(int len) external returns (Position[] memory _d);
-
   function stGame(string memory name) external;
 
   function addUser() external;

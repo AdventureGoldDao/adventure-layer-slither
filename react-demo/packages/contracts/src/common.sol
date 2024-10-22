@@ -17,15 +17,17 @@ import {UsersData} from "./codegen/tables/Users.sol";
     UsersData[] leaderboard;
     Orb[] orbs;
   }
+
   struct UpdatePosition {
     uint8 status;
-    Position[] add;
+    uint8[] orbIds;
+    uint8 score;
   }
 
 
 
   function positionToEntityKey(Position memory p) pure returns (bytes32) {
-    int x = p.x / 500;
-    int y = p.x / 500;
+    int x = p.x / 10000;
+    int y = p.x / 10000;
     return keccak256(abi.encode(x, y));
   }

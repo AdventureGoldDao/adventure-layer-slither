@@ -35,26 +35,6 @@ contract GameStateSystem is System {
     return gameUpdatePosition[addr];
   }
 
-  function initSnakeBody() public {
-    if (gameUserSnakeBody[msg.sender].length == 0) {
-      for (int32 i = 0; i < 20; i++) {
-        gameUserSnakeBody[msg.sender].push(Position(60000, 10000 + i * 500));
-      }
-    }
-  }
-
-  function getNewBodyPartPosition(int len) public returns (Position[] memory _d) {
-    uint256 len2 = gameUserSnakeBody[msg.sender].length;
-    int xDiff = gameUserSnakeBody[msg.sender][len2 - 1].x - gameUserSnakeBody[msg.sender][len2 - 2].x;
-    int yDiff = gameUserSnakeBody[msg.sender][len2 - 1].y - gameUserSnakeBody[msg.sender][len2 - 2].y;
-    for (int i = 0; i < len; i++) {
-      Position memory p = Position(int32(gameUserSnakeBody[msg.sender][len2 - 1].x + xDiff * i), int32(gameUserSnakeBody[msg.sender][len2 - 1].y + yDiff * i));
-      gameUpdatePosition[msg.sender].add.push(p);
-      gameUserSnakeBody[msg.sender].push(p);
-    }
-    return _d;
-  }
-
   function stGame(string memory name) public {
     Users.setUsername(msg.sender,name);
     addUser();
@@ -63,7 +43,6 @@ contract GameStateSystem is System {
   function addUser() public {
     if (gameStateExistsAndRemove(false)) {
       GameCodeToGameState.pushPlayers(gameCode,msg.sender);
-      initSnakeBody();
     }
   }
 
@@ -93,38 +72,31 @@ contract GameStateSystem is System {
   }
 
 
-  function moveSnake(Position[] memory list) public{
+  function moveSnake(Position[] memory list) public {
     delete gameUpdatePosition[msg.sender];
     for (uint i = 0; i < list.length; i++) {
       Position memory add = list[i];
 
       if (add.x >= MAX_MAP_RADIUS || add.x <= MIN_MAP_RADIUS || add.y >= MAX_MAP_RADIUS || add.y <= MIN_MAP_RADIUS) {
         gameUpdatePosition[msg.sender].status = 2;
+        return;
       }
-
-      gameUserSnakeBody[msg.sender].push(add);
 
       uint256 idx = Orbs.getValue(positionToEntityKey(add));
       if (idx != 0) {
         Orbs.deleteRecord(positionToEntityKey(add));
         Orb memory o = gameStateData.orbs[idx];
+        gameUpdatePosition[msg.sender].status = 1;
+        gameUpdatePosition[msg.sender].orbIds.push(uint8(idx));
         if (keccak256(bytes(o.orbSize)) == keccak256(bytes("SMALL"))) {
-          Users.setScore(msg.sender,Users.getScore(msg.sender) + 1);
-          gameUpdatePosition[msg.sender].status = 1;
-          getNewBodyPartPosition(1);
+          gameUpdatePosition[msg.sender].score += 1;
         }else{
-          Users.setScore(msg.sender,Users.getScore(msg.sender) + 5);
-          gameUpdatePosition[msg.sender].status = 1;
-          getNewBodyPartPosition(5);
+          gameUpdatePosition[msg.sender].score += 5;
         }
+        Users.setScore(msg.sender,Users.getScore(msg.sender) + gameUpdatePosition[msg.sender].score);
         gameStateData.orbs[idx] = gameStateData.orbs[gameStateData.orbs.length - 1];
         gameStateData.orbs.pop();
       }
-
-      for (uint k = 1; k < gameUserSnakeBody[msg.sender].length; k++) {
-        gameUserSnakeBody[msg.sender][k - 1] = gameUserSnakeBody[msg.sender][k];
-      }
-      gameUserSnakeBody[msg.sender].pop();
     }
   }
 
@@ -137,11 +109,10 @@ contract GameStateSystem is System {
       gameStateData.leaderboard.push(Users.get(_players[i]));
     }
     uint256 len = gameStateData.orbs.length;
-    for (uint256 i = 0; i < MAX_ORB_COUNT - len; i++) {
-      int idx = int(i + len);
-      Position memory p = Position(randomCoordinate(idx), randomCoordinate(idx + 3));
+    for (uint256 i = len; i < MAX_ORB_COUNT; i++) {
+      Position memory p = Position(randomCoordinate(int(i)), randomCoordinate(int(i) + 3));
       Orbs.set(positionToEntityKey(p),i);
-      gameStateData.orbs.push(Orb(p, generateOrbSize(idx), generateColor(idx)));
+      gameStateData.orbs.push(Orb(p, generateOrbSize(int(i)), generateColor(int(i))));
     }
   }
 
