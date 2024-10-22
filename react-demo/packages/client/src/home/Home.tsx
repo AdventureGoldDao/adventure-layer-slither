@@ -182,6 +182,11 @@ export default function Home({
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const address = await signer.getAddress();
+    // const accounts = await web3.eth.getAccounts();
+    // if (!accounts || !accounts.length) {
+    //   return
+    // }
+    // const address = accounts[0]
 
     let setupResult = accountSetup
     if (!accountSetup) {
@@ -219,7 +224,7 @@ export default function Home({
     const balanceValue = ethers.utils.formatEther(linkedBalance)
     setPrivateBalance(balanceValue);
 
-    if (balanceValue >= 1) {
+    if (balanceValue >= 0.2) {
       setIsReady(true);
     }
     console.log('Init', linkedAddress, balanceValue)
@@ -271,6 +276,11 @@ export default function Home({
         const signer = provider.getSigner();
         address = await signer.getAddress();
         setAccount(address)
+        // const accounts = await web3.eth.getAccounts();
+        // if (accounts && accounts.length) {
+        //   address = accounts[0]
+        //   setAccount(address)
+        // }
       }
 
       let setupResult = accountSetup
@@ -372,7 +382,12 @@ export default function Home({
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const balance = await provider.getBalance(privateAddress);
-      setPrivateBalance(ethers.utils.formatEther(balance));
+      const balanceAmount = ethers.utils.formatEther(balance);
+      setPrivateBalance(balanceAmount);
+
+      if (balanceAmount >= 0.2) {
+        setIsReady(true);
+      }
     }
   };
 
@@ -385,9 +400,11 @@ export default function Home({
       try {
         const tx = await signer.sendTransaction({
           to: privateAddress,
-          value: ethers.utils.parseEther('0.02'), // Set amount to transfer
+          value: ethers.utils.parseEther('0.2'), // Set amount to transfer
         });
         await tx.wait();
+
+        fetchBalance()
         // alert('Transfer complete');
       } catch (error) {
         setErrorText('Transfer failed: ' + error.message);
