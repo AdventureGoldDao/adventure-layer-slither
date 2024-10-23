@@ -34,16 +34,3 @@ export default interface GameState {
   orbs: Set<OrbData>;
 }
 
-/**
- * Extracts and returns a map of users to their scores, from a server
- * websocket message
- * @param leaderboardData a list of leaderboard entries, from a server websocket message
- * @returns a map of users to their scores
- */
-export function extractLeaderboardMap(leaderboardData: leaderboardEntry[]) {
-  const leaderboard: Map<string, number> = new Map<string, number>();
-  leaderboardData.forEach((entry: leaderboardEntry) => {
-    leaderboard.set(entry.username, entry.score);
-  });
-  return leaderboard;
-}

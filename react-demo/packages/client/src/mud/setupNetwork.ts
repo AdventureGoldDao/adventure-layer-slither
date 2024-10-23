@@ -84,7 +84,6 @@ export async function setupNetwork(mode = 'default') {
     ...clientOptions,
     // account: accounts[0],
     account: clientAddress,
-    maxFeePerGas: parseGwei('20'),
   })
     .extend(transactionQueue())
     .extend(writeObserver({ onWrite: (write) => write$.next(write) }));

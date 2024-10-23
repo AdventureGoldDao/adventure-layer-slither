@@ -2,26 +2,26 @@
 pragma solidity >=0.8.24;
 
 import {System} from "@latticexyz/world/src/System.sol";
-import {Users, UsersData, GameCodeToGameState, Orbs} from "../codegen/index.sol";
-import {Position,Orb,GameState,UpdatePosition,positionToEntityKey} from "../common.sol";
+import {Users, UsersData, GameCodeToGameState} from "../codegen/index.sol";
+import {Position,Orb,UpdatePosition} from "../common.sol";
 
 contract GameStateSystem is System {
   uint constant MAX_ORB_COUNT = 150;
-  int32 constant MAX_MAP_RADIUS = 153300;
-  int32 constant MIN_MAP_RADIUS = -153300;
+  int32 constant MAX_MAP_RADIUS = 151000;
+  int32 constant MIN_MAP_RADIUS = -151000;
   uint32 constant gameCode = 12345;
   uint256 constant MAP_COORDINATE = 140000;
   uint256 constant SNAKE_CIRCLE_RADIUS = 3500;
   mapping(address => UpdatePosition) private gameUpdatePosition;
-  GameState private gameStateData;
+  Orb[] private orbs;
 
   function getOrbData() public view returns (Orb[] memory) {
-    return gameStateData.orbs;
+    return orbs;
   }
 
 
   function getUpdatePosition(address addr) public view returns (UpdatePosition memory _d) {
-    _d.orbs = gameStateData.orbs;
+    _d.orbs = orbs;
     _d.score = gameUpdatePosition[addr].score;
     _d.status = gameUpdatePosition[addr].status;
     return _d;
@@ -73,12 +73,12 @@ contract GameStateSystem is System {
           return;
         }
 
-        for (uint256 j = 0; j < gameStateData.orbs.length; j++) {
-          Orb memory o = gameStateData.orbs[j];
+        for (uint256 j = 0; j < orbs.length; j++) {
+          Orb memory o = orbs[j];
         if (calculateDistance(add, o.position) <= SNAKE_CIRCLE_RADIUS) {
           gameUpdatePosition[msg.sender].status = 1;
-          gameStateData.orbs[j] = gameStateData.orbs[gameStateData.orbs.length - 1];
-          gameStateData.orbs.pop();
+          orbs[j] = orbs[orbs.length - 1];
+          orbs.pop();
           if (keccak256(bytes(o.orbSize)) == keccak256(bytes("SMALL"))) {
             gameUpdatePosition[msg.sender].score += 1;
           }else{
@@ -112,11 +112,10 @@ contract GameStateSystem is System {
   }
 
   function adventureHeatbeat() public {
-    uint256 len = gameStateData.orbs.length;
+    uint256 len = orbs.length;
     for (uint256 i = len; i < MAX_ORB_COUNT; i++) {
       Position memory p = Position(randomCoordinate(int(i)), randomCoordinate(int(i) + 3));
-      Orbs.set(positionToEntityKey(p),i + 1);
-      gameStateData.orbs.push(Orb(p, generateOrbSize(int(i)), generateColor(int(i))));
+      orbs.push(Orb(p, generateOrbSize(int(i)), generateColor(int(i))));
     }
   }
 

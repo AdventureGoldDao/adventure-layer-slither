@@ -44,8 +44,7 @@ export function createSystemCalls(
   };
   const endGame = async () => {
     const tx = await worldContract.write.endGame();
-    await waitForTransaction(tx);
-    return getComponentValue(Users, playerEntity);
+    return await waitForTransaction(tx);
   };
 
   const adventureHeatbeat = async () => {

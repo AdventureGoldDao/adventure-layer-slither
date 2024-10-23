@@ -122,16 +122,10 @@ function ControlledInput({
 interface HomeProps {
   /** A function that sets whether or not the client has started playing the game */
   setGameStarted: Dispatch<SetStateAction<boolean>>;
-  /** A function that sets the current leaderboard (set of scores) for the game */
-  setScores: Dispatch<SetStateAction<Map<string, number>>>;
-  /** A function that sets the game code for the lobby the client is playing in */
-  setGameCode: Dispatch<SetStateAction<string>>;
   /** A metadata representation of the current state of the game */
   gameState: GameState;
   /** A function that sets the current state of the game */
   setGameState: Dispatch<SetStateAction<GameState>>;
-  /** A list of all orbs stored in metadata form */
-  orbSet: Set<OrbData>;
   accountSetup: any;
   setAccountSetup: Dispatch<SetStateAction<any>>;
 }
@@ -144,33 +138,25 @@ interface HomeProps {
  *
  * @param setGameStarted A function that sets whether or not the client has started playing the game
  * @param setScores A function that sets the current leaderboard (set of scores) for the game
- * @param setGameCode A function that sets the game code for the lobby the client is playing in
  * @param gameState A metadata representation of the current state of the game
  * @param setGameState A function that sets the current state of the game
- * @param orbSet A list of all orbs stored in metadata form
+ * @param setAccountSetup A function that sets whether or not the client has created an account
  * @returns the home page of the Slither+ game
  */
 export default function Home({
   setGameStarted,
-  setScores,
-  setGameCode,
   gameState,
   setGameState,
-  orbSet,
   accountSetup,
   setAccountSetup,
 }: HomeProps): JSX.Element {
   const {
-    network: { playerEntity },
-    components: { Users },
     systemCalls: {
-      stGame, adventureHeatbeat, moveSnake, getDataPlayers, getOrbData, getLeaderboardData, getSnakeBody
+      stGame, adventureHeatbeat, getOrbData
     },
   } = useMUD();
   const mudResult = useMUD()
   const { setMudContext } = useCustomMUD();
-  const uData = useComponentValue(Users, playerEntity);
-  console.log("uData:", uData)
 
   const [timer, setTimer] = useState(null);
   const [username, setUsername] = useState("");
@@ -438,55 +424,16 @@ export default function Home({
     // }
 
     doSol();
-    setErrorText("");
-
-    try {
-      // registerContract(
-      //   setTimer,
-      //   systemCalls,
-      //   setScores,
-      //   setGameStarted,
-      //   setErrorText,
-      //   setGameCode,
-      //   orbSet,
-      //   gameState,
-      //   setGameState,
-      //   username,
-      //   false,
-      // );
-
-      registerSocket(
-        setScores,
-        setGameStarted,
-        setErrorText,
-        setGameCode,
-        orbSet,
-        gameState,
-        setGameState,
-        username,
-        false,
-      );
-    } catch (e) {
-      // check server status
-      setErrorText("Error: Could not connect to server!");
-    }
   };
 
   const doSol = async () => {
     const r = await stGame(username)
     console.log("adduser success:", r)
-    setGameCode("12345");
-    // setGameStarted(true)
-    // console.log("init state:", await adventureHeatbeat())
-    console.log("getOrbData: ", await getOrbData())
-    console.log("getLeaderboardData: ", await getLeaderboardData())
-    console.log("getSnakeBody: ", await getSnakeBody())
-    let list = [];
-    for (let i = 0; i < 10; i++) {
-      list.push({ x: 60300 + i * 100, y: 10000 });
-    }
-    console.log("moveSnake: ", await moveSnake(list))
-    console.log("getSnakeBody: ", await getSnakeBody())
+    console.log("adventureHeatbeat:", await adventureHeatbeat())
+    setGameStarted(true)
+    const orbsArray: OrbData[] = await getOrbData();
+    gameState.orbs = new Set(orbsArray);
+    setGameState(gameState);
   }
 
   // registers the client's websocket to handle joining a game with a code

@@ -17,7 +17,6 @@ export default defineWorld({
       },
       key: ["gameCode"],
     },
-    Orbs: "uint256",
     Balance: {
       schema: {
         player: "address",

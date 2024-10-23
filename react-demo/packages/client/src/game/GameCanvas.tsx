@@ -114,8 +114,8 @@ export default function GameCanvas({
       newGameState.snake.snakeBody.unshift({x: newPosition.x, y: newPosition.y});
       moveList.push({x: Math.round(newPosition.x * 100), y: Math.round(newPosition.y * 100)});
 
-      if (moveList.length > 4) {
-        const list1  = moveList.splice(0, 4);
+      if (moveList.length > 6) {
+        const list1  = moveList.splice(0, 6);
         const res : moveUpData = await moveSnake(list1);
         if (res.status == 2) {
           endGame();
