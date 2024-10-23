@@ -556,6 +556,26 @@ export default function Home({
   const fetchBalance = async () => {
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const existAddress = getConnectedAccount();
+      const walletAddress = await signer.getAddress();
+      if (walletAddress !== existAddress) {
+        window.location.reload();
+        return
+      }
+
+      const networkConfig = await getNetworkConfig();
+      const targetChainId = networkConfig.chainId;
+      const chainId = await web3.eth.getChainId();
+      if (chainId !== BigInt(targetChainId)) {
+        try {
+          await switchNetwork(targetChainId);
+        } catch (error) {
+          setErrorText("Failed to switch network:", error);
+          return;
+        }
+      }
+
       const balance = await provider.getBalance(privateAddress);
       const balanceAmount = ethers.utils.formatEther(balance);
       setPrivateBalance(balanceAmount);
