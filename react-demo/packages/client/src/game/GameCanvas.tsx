@@ -1,6 +1,6 @@
 import {Dispatch, SetStateAction, useEffect} from "react";
 
-import GameState, {extractLeaderboardMap, leaderboardEntry, Position} from "./GameState";
+import GameState, {extractLeaderboardMap, leaderboardEntry, moveUpData, Position} from "./GameState";
 import Snake, {SNAKE_VELOCITY, SnakeData} from "./snake/Snake";
 import Orb, {OrbData} from "./orb/Orb";
 import Border from "./boundary/Boundary";
@@ -63,9 +63,9 @@ export default function GameCanvas({
     mousePos.y = e.pageY;
   };
 
-  const updatePositions = () => {
+  const updatePositions = async () => {
     let newGameState: GameState = {...gameState};
-    setGameState(moveSnakeTick(newGameState));
+    setGameState(await moveSnakeTick(newGameState));
   };
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function GameCanvas({
    * @returns the newly updated metadata for the client's snake
    * @param gameState
    */
-  const moveSnakeTick = (gameState: GameState): GameState => {
+  const moveSnakeTick = async (gameState: GameState): Promise<GameState> => {
     // remove last position from the end (to simulate movement)
     gameState.snake.snakeBody.pop();
     const front: Position | undefined = gameState.snake.snakeBody.peekFront();
@@ -124,24 +124,30 @@ export default function GameCanvas({
       list.push({x: Math.round(newPosition.x * 100), y: Math.round(newPosition.y * 100)});
 
       if (list.length > 6) {
-        moveSnake(list).then((res: { status: number; add: Position[]; }) => {
-          if (res.status == 2) {
-            endGame();
-            setGameStarted(false);
-          } else {
-            if (res.add.length > 0) {
-              res.add.forEach((bodyPart: Position) => {
-                gameState.snake.snakeBody.push({x: bodyPart.x / 100.0, y: bodyPart.y / 100.0});
-              });
-              getOrbData().then((orbs: Set<OrbData>) => {
-                gameState.orbs = orbs;
-              })
-              getLeaderboardData().then((sco: leaderboardEntry[]) => {
-                gameState.scores = extractLeaderboardMap(sco);
-              })
+        const res : moveUpData = await moveSnake(list);
+        console.log("res.score:", res)
+        if (res.status == 2) {
+          endGame();
+          setGameStarted(false);
+        } else {
+          if (res.score > 0) {
+            for (let i = 0; i < res.score; i++) {
+              const last : Position | undefined = gameState.snake.snakeBody.get(0);
+              const secondLast : Position | undefined = gameState.snake.snakeBody.get(1);
+              if (last !== undefined && secondLast !== undefined) {
+                const xDifference = last.x - secondLast.x;
+                const yDifference = last.y - secondLast.y;
+                const p = { x: Number((last.x - xDifference).toFixed(2)) * 100, y: Number((last.y - yDifference).toFixed(2)) * 100 }
+                gameState.snake.snakeBody.push(p);
+                console.log("add :", p)
+              }
+              //
             }
+            // getLeaderboardData().then((sco: leaderboardEntry[]) => {
+            //   gameState.scores = extractLeaderboardMap(sco);
+            // })
           }
-        })
+        }
         list = [];
       }
     }

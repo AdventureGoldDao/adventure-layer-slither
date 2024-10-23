@@ -65,6 +65,7 @@ export function createSystemCalls(
 
   const moveSnake = async (list: any) => {
     const tx = await worldContract.write.moveSnake([list]);
+    await waitForTransaction(tx);
     return await worldContract.read.getUpdatePosition([walletClient.account.address]);
   };
 
