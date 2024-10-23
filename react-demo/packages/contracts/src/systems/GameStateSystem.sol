@@ -15,6 +15,11 @@ contract GameStateSystem is System {
   mapping(address => UpdatePosition) private gameUpdatePosition;
   GameState private gameStateData;
 
+  function getOrbData() public view returns (Orb[] memory) {
+    return gameStateData.orbs;
+  }
+
+
   function getUpdatePosition(address addr) public view returns (UpdatePosition memory _d) {
     _d.orbs = gameStateData.orbs;
     _d.score = gameUpdatePosition[addr].score;
