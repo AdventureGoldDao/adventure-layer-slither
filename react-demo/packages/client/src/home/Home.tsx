@@ -174,6 +174,7 @@ export default function Home({
 
   const [timer, setTimer] = useState(null);
   const [username, setUsername] = useState("");
+  const [tempAccount, setTempAccount] = useState("");
   const [installDev, setInstallDev] = useState(false);
   const [account, setAccount] = useState("");
   const [isReady, setIsReady] = useState(false);
@@ -189,20 +190,19 @@ export default function Home({
   const web3 = new Web3(window.ethereum);
 
   const detectNetworkPrivate = async (setupResult: any, account: string, privateKey: any) => {
-    const networkConfig = await getNetworkConfig()
+    // const networkConfig = await getNetworkConfig()
     let targetPrivate = privateKey
     let pk = ethers.utils.hexZeroPad(ethers.utils.arrayify(privateKey), 32)
     // ethers.utils.formatBytes32String(privateKey)
     const bindAddress = await setupResult.systemCalls.getPrivateBindAddress(pk)
-    const targetResult = mudResult
-    if (bindAddress && bindAddress !== account && ethers.constants.AddressZero !== bindAddress ) {
+    let targetResult = mudResult
+    if (bindAddress && bindAddress !== account && ethers.constants.AddressZero !== bindAddress) {
       targetPrivate = generatePrivateKey();
 
-      console.log(bindAddress, account)
-      alert(`Generate New Private Key: ${targetPrivate}`)
+      // alert(`Generate New Private Key: ${targetPrivate}`)
       setPrivateKey(targetPrivate)
       setBurnerPrivateKey(targetPrivate)
-      networkConfig.privateKey = targetPrivate
+      // networkConfig.privateKey = targetPrivate
       const newResult = await setupCustom('default')
       setMudContext(newResult)
       targetResult = newResult
@@ -231,8 +231,11 @@ export default function Home({
     if (!address) {
       return
     }
+
+    setTempAccount(address)
     const existAddress = getConnectedAccount();
     if (existAddress !== address) {
+      // setTempAccount(address)
       return
     }
     // const accounts = await web3.eth.getAccounts();
@@ -262,6 +265,7 @@ export default function Home({
       currentResult = existResult
     } else if (!bindAccount && networkConfig.privateKey) {
       // setPrivateKey(networkConfig.privateKey);
+      // console.log(`Initiating [${address}] <${bindAccount}> <${networkConfig.privateKey}>`)
       const detectResult = await detectNetworkPrivate(setupResult, address, networkConfig.privateKey)
       if (!detectResult) {
         return;
@@ -388,7 +392,7 @@ export default function Home({
           setMudContext(existResult)
         } else if (!bindAccount) {
           console.log('Set New Account')
-          await detectNetworkPrivate(accountSetup, account, privateKey)
+          await detectNetworkPrivate(setupResult, account, privateKey)
           // await setupResult.systemCalls.setBindAccount(privateKey)
         }
       } catch (err) {
@@ -418,6 +422,15 @@ export default function Home({
       return;
     }
 
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+
+    const existAddress = getConnectedAccount();
+    const walletAddress = await signer.getAddress();
+    if (walletAddress !== existAddress) {
+      setErrorText('Wallet Address not match, Please refresh to continue');
+      return
+    }
     // if (!account) {
     const address = await connectWallet();
     setAccount(address);
@@ -558,6 +571,12 @@ export default function Home({
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
 
+      const existAddress = getConnectedAccount();
+      const walletAddress = await signer.getAddress();
+      if (walletAddress !== existAddress) {
+        setErrorText('Wallet Address not match, Please refresh to continue');
+        return
+      }
       try {
         const tx = await signer.sendTransaction({
           to: privateAddress,
@@ -598,28 +617,38 @@ export default function Home({
           <Kbd>{ account ? shortenAddress(account) : 'offline'}</Kbd>
           <Kbd>{ privateAddress ? shortenAddress(privateAddress) : 'offline'}</Kbd>
         </div> */}
-        <h2
-          className="username-prompt"
-          aria-label="Prompt: Enter your username"
-        >
-          Enter your username:
-        </h2>
-        <ControlledInput
-          value={username}
-          setValue={setUsername}
-          onEnter={() => {
-            if (inputGamecode.length === 0) {
-              startNewGame();
-            } else {
-              startGameWithCode();
-            }
-          }}
-          placeholder="Type your username here:"
-          className="username-input"
-          aria-label="Username input box"
-        />
+        {account && <div>
+          <h2
+            className="username-prompt"
+            aria-label="Prompt: Enter your username"
+          >
+            Enter your username:
+          </h2>
+          <ControlledInput
+            value={username}
+            setValue={setUsername}
+            onEnter={() => {
+              if (inputGamecode.length === 0) {
+                startNewGame();
+              } else {
+                startGameWithCode();
+              }
+            }}
+            placeholder="Type your username here:"
+            className="username-input"
+            aria-label="Username input box"
+          />
+        </div>}
         {errorText && <p className="error-text">{errorText}</p>}
-        {!account && <Box p={5} bg="gray.800" color="white" borderRadius="md" width="50%" margin={"5% auto"}>
+        {!account && <Box p={5} bg="gray.800" color="white" borderRadius="md" width="60%" margin={"5% auto"}>
+          <Box>
+            <Text fontSize="lg" mb={2}>
+              Wallet Address:
+            </Text>
+            <Text bg="gray.700" p={2} borderRadius="md" mb={5}>
+              {tempAccount && shortenAddress(tempAccount) || 'No wallet connected'}
+            </Text>
+          </Box>
           {/* Connected Wallet */}
           <VStack spacing={4} align="stretch">
             {/* Connect Wallet Button */}
@@ -636,7 +665,7 @@ export default function Home({
                 Connected Wallet:
               </Text>
               <Text bg="gray.700" p={2} borderRadius="md" mb={2}>
-                { account && shortenAddress(account) || 'No wallet connected'}
+                {account && shortenAddress(account) || 'No wallet connected'}
               </Text>
             </Box>
 
