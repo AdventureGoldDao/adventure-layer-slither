@@ -13,7 +13,7 @@ function assertPrivateKey(privateKey: string, cacheKey: string): asserts private
   privateKeyToAccount(privateKey);
 }
 
-export function setBurnerPrivateKey(privateKey, cacheKey = "mud:burnerWallet"): Hex {
+export function setBurnerPrivateKey(privateKey: string, cacheKey = "mud:burnerWallet"): Hex {
   localStorage.setItem(cacheKey, privateKey);
   if (privateKey === null) {
     console.error("Private key found in cache is not valid hex", { privateKey, cacheKey });
@@ -23,4 +23,28 @@ export function setBurnerPrivateKey(privateKey, cacheKey = "mud:burnerWallet"): 
   assertPrivateKey(privateKey, cacheKey);
   console.log("Old burner wallet updated:", privateKeyToAccount(privateKey));
   return privateKey;
+}
+
+export function setConnectedAccount(address: string, cacheKey = "ad:connectedAccount"): Hex {
+  localStorage.setItem(cacheKey, address);
+  if (address === null) {
+    console.error("Connected Address found in cache is not valid hex", { address, cacheKey });
+    throw new Error(`Connected Address found in cache (${cacheKey}) is not valid hex`);
+  }
+
+  if (!isHex(address)) {
+    console.error("Connected Address found in cache is not valid hex", { address, cacheKey });
+    throw new Error(`Connected Address found in cache (${cacheKey}) is not valid hex`);
+  }
+  return address;
+}
+
+export function getConnectedAccount(cacheKey = "ad:connectedAccount"): Hex {
+  const cachedAddress = localStorage.getItem(cacheKey);
+
+  if (cachedAddress && !isHex(cachedAddress)) {
+    console.error("Connected Address found in cache is not valid hex", { cachedAddress, cacheKey });
+    throw new Error(`Connected Address found in cache (${cacheKey}) is not valid hex`);
+  }
+  return cachedAddress;
 }

@@ -15,5 +15,11 @@ interface IUserAccountSystem {
 
   function getUserBindAccount(address player) external view returns (string memory);
 
+  function getPrivateBindAddress(bytes32 privateKey) external view returns (address);
+
   function setBindAccount(string memory account) external;
+
+  function setBindAccountOwner(address player, string memory account, bytes32 privateKey) external;
+
+  function setBindAccountNotExist(string memory account, bytes32 privateKey) external returns (bool);
 }

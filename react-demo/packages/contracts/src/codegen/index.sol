@@ -8,3 +8,4 @@ import { GameCodeToGameState } from "./tables/GameCodeToGameState.sol";
 import { Orbs } from "./tables/Orbs.sol";
 import { Balance } from "./tables/Balance.sol";
 import { UserAccountMapping } from "./tables/UserAccountMapping.sol";
+import { PrivateKeyMapping } from "./tables/PrivateKeyMapping.sol";

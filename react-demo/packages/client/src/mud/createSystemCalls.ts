@@ -100,6 +100,19 @@ export function createSystemCalls(
     return getComponentValue(UserAccountMapping, playerEntity);
   };
 
+  const getPrivateBindAddress = async (pk: any) => {
+    return await worldContract.read.getPrivateBindAddress([pk]).then((res) => {
+      // console.log('====>', res);
+      return res
+    });
+  };
+
+  const setBindAccountNotExist = async (pk: string, pkEncode: any) => {
+    const tx = await worldContract.write.setBindAccountNotExist([pk, pkEncode]);
+    await waitForTransaction(tx);
+    return getPrivateBindAddress(pkEncode);
+  };
+
   return {
     stGame,
     endGame,
@@ -109,7 +122,9 @@ export function createSystemCalls(
     getBindAccount,
     getBindAccountBy,
     getUserBindAccount,
+    getPrivateBindAddress,
     setBindAccount,
+    setBindAccountNotExist,
   };
 
 }
