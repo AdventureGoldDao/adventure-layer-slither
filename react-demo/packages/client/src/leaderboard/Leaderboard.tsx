@@ -1,23 +1,20 @@
 import React from "react";
-import { leaderboardEntry } from "../game/GameState";
 import "./Leaderboard.css";
+import {useMUD} from "../MUDContext";
+import {useComponentValue} from "@latticexyz/react";
 
 /**
  * Displays the current lobby's leaderboard, in the top right.
  * @param leadboard a map of each user in the lobby to their score
  * @returns a HTML element rendering the leaderboard
  */
-export default function Leaderboard({
-  leaderboard,
-}: {
-  leaderboard: Map<string, number>;
-}): JSX.Element {
-  let leaderboardEntries: [string, number][] = Array.from(
-    leaderboard.entries()
-  );
-  leaderboardEntries = leaderboardEntries.sort(
-    (a: [string, number], b: [string, number]) => (a[1] > b[1] ? -1 : 1)
-  );
+export default function Leaderboard(): JSX.Element {
+  const {
+    components: { Users },
+    network: { playerEntity },
+  } = useMUD();
+  const user = useComponentValue(Users, playerEntity);
+
   return (
     <div className="leaderboard">
       <table>
@@ -26,16 +23,10 @@ export default function Leaderboard({
             Leaderboard
           </th>
         </tr>
-        {leaderboardEntries.map((entry: [string, number]) => {
-          const username: string = entry[0];
-          const score: number = entry[1];
-          return (
-            <tr>
-              <td className="username-entry">{username}</td>
-              <td className="score-entry">{score}</td>
-            </tr>
-          );
-        })}
+        <tr>
+          <td className="username-entry">{user.username}</td>
+          <td className="score-entry">{user.score}</td>
+        </tr>
       </table>
     </div>
   );

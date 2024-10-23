@@ -117,8 +117,6 @@ function ControlledInput({
 interface HomeProps {
   /** A function that sets whether or not the client has started playing the game */
   setGameStarted: Dispatch<SetStateAction<boolean>>;
-  /** A function that sets the game code for the lobby the client is playing in */
-  setGameCode: Dispatch<SetStateAction<string>>;
   /** A metadata representation of the current state of the game */
   gameState: GameState;
   /** A function that sets the current state of the game */
@@ -144,7 +142,6 @@ interface HomeProps {
  */
 export default function Home({
   setGameStarted,
-  setGameCode,
   gameState,
   setGameState,
   accountSetup,
@@ -336,9 +333,10 @@ export default function Home({
     const r = await stGame(username)
     console.log("adduser success:", r)
     console.log("adventureHeatbeat:", await adventureHeatbeat())
-    setGameCode("12345");
     setGameStarted(true)
-    gameState.orbs = await getOrbData();
+    const orbsArray: OrbData[] = await getOrbData();
+    gameState.userName = username;
+    gameState.orbs = new Set(orbsArray);
     setGameState(gameState);
   }
 

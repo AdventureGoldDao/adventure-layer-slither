@@ -16,8 +16,6 @@ export default function App(): JSX.Element {
 
   const [accountSetup, setAccountSetup] = useState(null);
   const [gameStarted, setGameStarted] = useState(false);
-  const [scores, setScores] = useState(new Map<string, number>());
-  const [gameCode, setGameCode] = useState("");
 
   const orbSet = new Set<OrbData>();
 
@@ -35,8 +33,6 @@ export default function App(): JSX.Element {
   const [gameState, setGameState] = useState<GameState>({
     snake: snake,
     orbs: orbSet,
-    scores: new Map(),
-    gameCode: "12345",
   });
 
   return (
@@ -45,15 +41,11 @@ export default function App(): JSX.Element {
         <Game
           gameState={gameState}
           setGameState={setGameState}
-          scores={scores}
-          gameCode={gameCode}
           setGameStarted={setGameStarted}
-          setScores={setScores}
         />
       ) : (
         <Home
           setGameStarted={setGameStarted}
-          setGameCode={setGameCode}
           gameState={gameState}
           setGameState={setGameState}
           accountSetup={accountSetup}

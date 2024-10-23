@@ -1,5 +1,6 @@
 import { Position } from "../GameState";
 import "./orb.css";
+import {useMUD} from "../../MUDContext";
 
 /** A metadata representation of the orb */
 export interface OrbData {

@@ -21,7 +21,7 @@ export interface leaderboardEntry {
 export interface moveUpData {
   status: number;
   score: number;
-  orbIds: number[];
+  orbs: Set<OrbData>;
 }
 
 /**
@@ -32,10 +32,6 @@ export default interface GameState {
   snake: SnakeData;
   /** A metadata representation of all current in-game orbs */
   orbs: Set<OrbData>;
-  /** A map of each user to their score */
-  scores: Map<String, Number>;
-  /** The game code of the current lobby being played */
-  gameCode: String;
 }
 
 /**

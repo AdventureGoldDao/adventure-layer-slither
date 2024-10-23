@@ -6,7 +6,7 @@
 import {getComponentValue} from "@latticexyz/recs";
 import {ClientComponents} from "./createClientComponents";
 import {SetupNetworkResult} from "./setupNetwork";
-import {singletonEntity} from "@latticexyz/store-sync/recs";
+import {Position} from "../game/GameState";
 
 export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
@@ -53,17 +53,11 @@ export function createSystemCalls(
     return await waitForTransaction(tx);
   };
 
-  const getSnakeBody = async () => {
-    return await worldContract.read.getSnakeBody([walletClient.account.address]);
-  };
   const getOrbData = async () => {
     return await worldContract.read.getOrbData();
   };
-  const getLeaderboardData = async () => {
-    return await worldContract.read.getLeaderboardData();
-  };
 
-  const moveSnake = async (list: any) => {
+  const moveSnake = async (list: Position[]) => {
     const tx = await worldContract.write.moveSnake([list]);
     await waitForTransaction(tx);
     return await worldContract.read.getUpdatePosition([walletClient.account.address]);
@@ -91,6 +85,8 @@ export function createSystemCalls(
     return getComponentValue(UserAccountMapping, playerEntity)
   };
 
+
+
   const getUserBindAccount = async (address) => {
     return await worldContract.read.getUserBindAccount([address]).then((res) => {
       // console.log('====>', res);
@@ -108,9 +104,7 @@ export function createSystemCalls(
     stGame,
     endGame,
     moveSnake,
-    getSnakeBody,
     getOrbData,
-    getLeaderboardData,
     adventureHeatbeat,
     getBindAccount,
     getBindAccountBy,

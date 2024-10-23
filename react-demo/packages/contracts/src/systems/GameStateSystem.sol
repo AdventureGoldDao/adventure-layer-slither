@@ -11,28 +11,15 @@ contract GameStateSystem is System {
   int32 constant MIN_MAP_RADIUS = -153300;
   uint32 constant gameCode = 12345;
   uint256 constant MAP_COORDINATE = 140000;
-  mapping(address => Position[]) private gameUserSnakeBody;
+  uint256 constant SNAKE_CIRCLE_RADIUS = 3500;
   mapping(address => UpdatePosition) private gameUpdatePosition;
   GameState private gameStateData;
 
-  function getLeaderboardData() public view returns (UsersData[] memory) {
-    return gameStateData.leaderboard;
-  }
-
-
-  function getOrbData() public view returns (Orb[] memory) {
-    return gameStateData.orbs;
-  }
-
-  function getDataPlayers() public view returns (address[] memory) {
-    return GameCodeToGameState.getPlayers(gameCode);
-  }
-
-  function getSnakeBody(address addr) public view returns (Position[] memory) {
-    return gameUserSnakeBody[addr];
-  }
-  function getUpdatePosition(address addr) public view returns (UpdatePosition memory) {
-    return gameUpdatePosition[addr];
+  function getUpdatePosition(address addr) public view returns (UpdatePosition memory _d) {
+    _d.orbs = gameStateData.orbs;
+    _d.score = gameUpdatePosition[addr].score;
+    _d.status = gameUpdatePosition[addr].status;
+    return _d;
   }
 
   function stGame(string memory name) public {
@@ -48,7 +35,6 @@ contract GameStateSystem is System {
 
   function endGame() public {
     Users.deleteRecord(msg.sender);
-    delete gameUserSnakeBody[msg.sender];
     gameStateExistsAndRemove(true);
   }
 
@@ -74,44 +60,57 @@ contract GameStateSystem is System {
 
   function moveSnake(Position[] memory list) public {
     delete gameUpdatePosition[msg.sender];
-    for (uint i = 0; i < list.length; i++) {
-      Position memory add = list[i];
+      for (uint256 i = 0; i < list.length; i++) {
+        Position memory add = list[i];
 
-      if (add.x >= MAX_MAP_RADIUS || add.x <= MIN_MAP_RADIUS || add.y >= MAX_MAP_RADIUS || add.y <= MIN_MAP_RADIUS) {
-        gameUpdatePosition[msg.sender].status = 2;
-        return;
-      }
-
-      uint256 idx = Orbs.getValue(positionToEntityKey(add));
-      if (idx != 0) {
-        Orbs.deleteRecord(positionToEntityKey(add));
-        Orb memory o = gameStateData.orbs[idx];
-        gameUpdatePosition[msg.sender].status = 1;
-        gameUpdatePosition[msg.sender].orbIds.push(uint8(idx));
-        if (keccak256(bytes(o.orbSize)) == keccak256(bytes("SMALL"))) {
-          gameUpdatePosition[msg.sender].score += 1;
-        }else{
-          gameUpdatePosition[msg.sender].score += 5;
+        if (add.x >= MAX_MAP_RADIUS || add.x <= MIN_MAP_RADIUS || add.y >= MAX_MAP_RADIUS || add.y <= MIN_MAP_RADIUS) {
+          gameUpdatePosition[msg.sender].status = 2;
+          return;
         }
-        Users.setScore(msg.sender,Users.getScore(msg.sender) + gameUpdatePosition[msg.sender].score);
-        gameStateData.orbs[idx] = gameStateData.orbs[gameStateData.orbs.length - 1];
-        gameStateData.orbs.pop();
+
+        for (uint256 j = 0; j < gameStateData.orbs.length; j++) {
+          Orb memory o = gameStateData.orbs[j];
+        if (calculateDistance(add, o.position) <= SNAKE_CIRCLE_RADIUS) {
+          gameUpdatePosition[msg.sender].status = 1;
+          gameStateData.orbs[j] = gameStateData.orbs[gameStateData.orbs.length - 1];
+          gameStateData.orbs.pop();
+          if (keccak256(bytes(o.orbSize)) == keccak256(bytes("SMALL"))) {
+            gameUpdatePosition[msg.sender].score += 1;
+          }else{
+            gameUpdatePosition[msg.sender].score += 5;
+          }
+          Users.setScore(msg.sender,Users.getScore(msg.sender) + uint32(gameUpdatePosition[msg.sender].score));
+        }
       }
     }
   }
 
+  function calculateDistance(Position memory p1, Position memory p2) internal pure returns (uint256) {
+    uint256 dx = abs(p1.x - p2.x);
+    uint256 dy = abs(p1.y - p2.y);
+
+    return sqrt(dx * dx + dy * dy);
+  }
+
+  function sqrt(uint256 x) internal pure returns (uint256 y) {
+    if (x == 0) return 0;
+    uint256 z = (x + 1) / 2;
+    y = x;
+    while (z < y) {
+      y = z;
+      z = (x / z + z) / 2;
+    }
+  }
+
+  function abs(int32 x) internal pure returns (uint256) {
+    return uint256(int256(x < 0 ? -x : x));
+  }
+
   function adventureHeatbeat() public {
-    address[] memory _players = GameCodeToGameState.getPlayers(uint32(12345));
-    if (gameStateData.leaderboard.length > 0) {
-      delete gameStateData.leaderboard;
-    }
-    for (uint256 i = 0; i < _players.length; i++) {
-      gameStateData.leaderboard.push(Users.get(_players[i]));
-    }
     uint256 len = gameStateData.orbs.length;
     for (uint256 i = len; i < MAX_ORB_COUNT; i++) {
       Position memory p = Position(randomCoordinate(int(i)), randomCoordinate(int(i) + 3));
-      Orbs.set(positionToEntityKey(p),i);
+      Orbs.set(positionToEntityKey(p),i + 1);
       gameStateData.orbs.push(Orb(p, generateOrbSize(int(i)), generateColor(int(i))));
     }
   }

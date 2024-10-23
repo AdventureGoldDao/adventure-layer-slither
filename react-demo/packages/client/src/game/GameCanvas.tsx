@@ -1,10 +1,11 @@
 import {Dispatch, SetStateAction, useEffect} from "react";
 
-import GameState, {extractLeaderboardMap, leaderboardEntry, moveUpData, Position} from "./GameState";
-import Snake, {SNAKE_VELOCITY, SnakeData} from "./snake/Snake";
+import GameState, { moveUpData, Position} from "./GameState";
+import Snake, {SNAKE_VELOCITY} from "./snake/Snake";
 import Orb, {OrbData} from "./orb/Orb";
 import Border from "./boundary/Boundary";
 import {useMUD} from "../MUDContext";
+import Denque from "denque";
 
 /**
  * The size of the map. The map is rendered centered on the origin, so
@@ -32,8 +33,6 @@ interface GameCanvasProps {
   setGameState: Dispatch<SetStateAction<GameState>>;
   /** A function that sets whether the game has started */
   setGameStarted: Dispatch<SetStateAction<boolean>>;
-  /** A function that sets the current leaderboard (set of scores) for the game */
-  setScores: Dispatch<SetStateAction<Map<string, number>>>;
 }
 
 /**
@@ -42,7 +41,6 @@ interface GameCanvasProps {
  * the game, all existing orbs, and the map border.
  * @param gameState A metadata representation of the current state of the game
  * @param setGameState A function that sets the current state of the game
- * @param user The username of the client
  * @param setGameStarted
  * @returns a rendered representation of the current game map for the client
  */
@@ -50,11 +48,10 @@ export default function GameCanvas({
                                      gameState,
                                      setGameState,
                                      setGameStarted,
-                                     setScores,
                                    }: GameCanvasProps): JSX.Element {
   const {
     systemCalls: {
-      moveSnake, endGame, getOrbData, getLeaderboardData
+      moveSnake, endGame,
     },
   } = useMUD();
 
@@ -63,14 +60,9 @@ export default function GameCanvas({
     mousePos.y = e.pageY;
   };
 
-  const updatePositions = async () => {
-    let newGameState: GameState = {...gameState};
-    setGameState(await moveSnakeTick(newGameState));
-  };
-
   useEffect(() => {
     // updates position of the client's snake every 50 ms
-    const interval = setInterval(updatePositions, 50);
+    const interval = setInterval(moveSnakeTick, 50);
     // updates mouse position when moved, determines target direction for snake
     window.addEventListener("mousemove", onMouseMove);
 
@@ -88,70 +80,63 @@ export default function GameCanvas({
     offset.y = window.innerHeight / 2 - front.y;
   }
 
-  let list: Position[] = [];
+  let moveList: Denque<Position> = new Denque();
   /**
    * Changes the given snake's velocity to follow the mouse's position,
    * and sends the new position to the Slither+ server
-   * @returns the newly updated metadata for the client's snake
-   * @param gameState
    */
-  const moveSnakeTick = async (gameState: GameState): Promise<GameState> => {
+  const moveSnakeTick = async () => {
+    let newGameState: GameState = {...gameState};
     // remove last position from the end (to simulate movement)
-    gameState.snake.snakeBody.pop();
-    const front: Position | undefined = gameState.snake.snakeBody.peekFront();
+    newGameState.snake.snakeBody.pop();
+    const front: Position | undefined = newGameState.snake.snakeBody.peekFront();
     if (front !== undefined) {
       const accel_angle: number = Math.atan2(
         // find the angle of acceleration based on your current position and the mouse position
         mousePos.y - offset.y - front.y,
         mousePos.x - offset.x - front.x
       );
-      let vel_angle: number = Math.atan2(gameState.snake.velocityY, gameState.snake.velocityX);
+      let vel_angle: number = Math.atan2(newGameState.snake.velocityY, newGameState.snake.velocityX);
       const angle_diff = mod(accel_angle - vel_angle, 2 * Math.PI);
       // changes the angle of velocity to move towards the mouse position
       vel_angle += angle_diff < Math.PI ? 0.1 : -0.1;
 
       // calculate new velocity
-      gameState.snake.velocityX = SNAKE_VELOCITY * Math.cos(vel_angle);
-      gameState.snake.velocityY = SNAKE_VELOCITY * Math.sin(vel_angle);
+      newGameState.snake.velocityX = SNAKE_VELOCITY * Math.cos(vel_angle);
+      newGameState.snake.velocityY = SNAKE_VELOCITY * Math.sin(vel_angle);
 
       // find new position of head based on velocity
       const newPosition: Position = {
-        x: front.x + gameState.snake.velocityX,
-        y: front.y + gameState.snake.velocityY,
+        x: front.x + newGameState.snake.velocityX,
+        y: front.y + newGameState.snake.velocityY,
       };
 
-      gameState.snake.snakeBody.unshift({x: newPosition.x, y: newPosition.y});
-      list.push({x: Math.round(newPosition.x * 100), y: Math.round(newPosition.y * 100)});
+      newGameState.snake.snakeBody.unshift({x: newPosition.x, y: newPosition.y});
+      moveList.push({x: Math.round(newPosition.x * 100), y: Math.round(newPosition.y * 100)});
 
-      if (list.length > 6) {
-        const res : moveUpData = await moveSnake(list);
-        console.log("res.score:", res)
+      if (moveList.length > 4) {
+        const list1  = moveList.splice(0, 4);
+        const res : moveUpData = await moveSnake(list1);
         if (res.status == 2) {
           endGame();
           setGameStarted(false);
         } else {
           if (res.score > 0) {
+            gameState.orbs = new Set(res.orbs);
+            const s : Position[] = newGameState.snake.snakeBody.toArray();
+            const last : Position  = s[s.length - 1];
+            const secondLast : Position  = s[s.length - 2];
+            const xDifference = last.x - secondLast.x;
+            const yDifference = last.y - secondLast.y;
             for (let i = 0; i < res.score; i++) {
-              const last : Position | undefined = gameState.snake.snakeBody.get(0);
-              const secondLast : Position | undefined = gameState.snake.snakeBody.get(1);
-              if (last !== undefined && secondLast !== undefined) {
-                const xDifference = last.x - secondLast.x;
-                const yDifference = last.y - secondLast.y;
-                const p = { x: Number((last.x - xDifference).toFixed(2)) * 100, y: Number((last.y - yDifference).toFixed(2)) * 100 }
-                gameState.snake.snakeBody.push(p);
-                console.log("add :", p)
-              }
-              //
+                const p = { x: last.x - xDifference * i, y: last.y - yDifference * i }
+                newGameState.snake.snakeBody.push(p);
             }
-            // getLeaderboardData().then((sco: leaderboardEntry[]) => {
-            //   gameState.scores = extractLeaderboardMap(sco);
-            // })
           }
         }
-        list = [];
       }
     }
-    return gameState;
+    setGameState(newGameState);
   }
 
   return (

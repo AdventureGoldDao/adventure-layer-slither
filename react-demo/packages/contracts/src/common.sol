@@ -20,7 +20,7 @@ import {UsersData} from "./codegen/tables/Users.sol";
 
   struct UpdatePosition {
     uint8 status;
-    uint8[] orbIds;
+    Orb[] orbs;
     uint8 score;
   }
 

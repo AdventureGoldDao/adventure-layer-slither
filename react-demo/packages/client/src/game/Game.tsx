@@ -14,14 +14,8 @@ interface GameProps {
   gameState: GameState;
   /** A function that sets the current state of the game */
   setGameState: Dispatch<SetStateAction<GameState>>;
-  /** A map from each user, as a string, to their score */
-  scores: Map<string, number>;
-  /** The game code of the game current being played */
-  gameCode: string;
   /** A function that sets whether the game has started */
   setGameStarted: Dispatch<SetStateAction<boolean>>;
-  /** A function that sets the current leaderboard (set of scores) for the game */
-  setScores: Dispatch<SetStateAction<Map<string, number>>>;
 }
 
 /**
@@ -30,19 +24,13 @@ interface GameProps {
  * with each user's score and the game code of the current lobby.
  * @param gameState A metadata representation of the current state of the game
  * @param setGameState A function that sets the current state of the game
- * @param scores A map from each user, as a string, to their score
- * @param gameCode The game code of the game current being played
  * @param setGameStarted
- * @param setScores
  * @returns the rendered representation of the client's current Slither+ game
  */
 export default function Game({
   gameState,
   setGameState,
-  scores,
-  gameCode,
   setGameStarted,
-  setScores,
 }: GameProps) {
   return (
     <div>
@@ -50,10 +38,9 @@ export default function Game({
         gameState={gameState}
         setGameState={setGameState}
         setGameStarted={setGameStarted}
-        setScores={setScores}
       />
-      <Leaderboard leaderboard={scores} />
-      <GameCode gameCode={gameCode} />
+      <Leaderboard/>
+      <GameCode gameCode={"12345"} />
     </div>
   );
 }
