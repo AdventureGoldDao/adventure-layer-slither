@@ -198,6 +198,7 @@ export default function Home({
     let targetResult = mudResult
     if (bindAddress && bindAddress !== account && ethers.constants.AddressZero !== bindAddress) {
       targetPrivate = generatePrivateKey();
+      pk = ethers.utils.hexZeroPad(ethers.utils.arrayify(targetPrivate), 32)
 
       // alert(`Generate New Private Key: ${targetPrivate}`)
       setPrivateKey(targetPrivate)
