@@ -67,11 +67,12 @@ export default function GameCanvas({
     window.addEventListener("mousemove", onMouseMove);
 
     return () => {
+      endGame();
       // clean up upon closing
       clearInterval(interval);
       window.removeEventListener("mousemove", onMouseMove);
     };
-  }, []);
+  }, [endGame]);
 
   // calculate offset to center snake on screen and place other objects relative to snake
   const front: Position | undefined = gameState.snake.snakeBody.peekFront();
@@ -110,6 +111,12 @@ export default function GameCanvas({
         x: front.x + newGameState.snake.velocityX,
         y: front.y + newGameState.snake.velocityY,
       };
+      if (isDie(newPosition)) {
+        console.log("game over....");
+        moveList = new Denque();
+        setGameStarted(false);
+        return;
+      }
 
       newGameState.snake.snakeBody.unshift({x: newPosition.x, y: newPosition.y});
       moveList.push({x: Math.round(newPosition.x * 100), y: Math.round(newPosition.y * 100)});
@@ -118,25 +125,31 @@ export default function GameCanvas({
         const list1  = moveList.splice(0, 6);
         const res : moveUpData = await moveSnake(list1);
         if (res.status == 2) {
-          endGame();
           setGameStarted(false);
-        } else {
-          if (res.score > 0) {
-            gameState.orbs = new Set(res.orbs);
-            const s : Position[] = newGameState.snake.snakeBody.toArray();
-            const last : Position  = s[s.length - 1];
-            const secondLast : Position  = s[s.length - 2];
-            const xDifference = last.x - secondLast.x;
-            const yDifference = last.y - secondLast.y;
-            for (let i = 0; i < res.score; i++) {
-                const p = { x: last.x - xDifference * i, y: last.y - yDifference * i }
-                newGameState.snake.snakeBody.push(p);
-            }
+          return
+        }
+        if (res.score > 0) {
+          gameState.orbs = new Set(res.orbs);
+          const s : Position[] = newGameState.snake.snakeBody.toArray();
+          const last : Position  = s[s.length - 1];
+          const secondLast : Position  = s[s.length - 2];
+          const xDifference = last.x - secondLast.x;
+          const yDifference = last.y - secondLast.y;
+          for (let i = 0; i < res.score; i++) {
+            const p = { x: last.x - xDifference * i, y: last.y - yDifference * i }
+            newGameState.snake.snakeBody.push(p);
           }
         }
       }
     }
     setGameState(newGameState);
+  }
+
+  const isDie = (p:Position) :boolean => {
+    if (p.x < -1533 || p.x >= 1533 || p.y < -1533 || p.y >= 1533) {
+      return true;
+    }
+    return false;
   }
 
   return (
