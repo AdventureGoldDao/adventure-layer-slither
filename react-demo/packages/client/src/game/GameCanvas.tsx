@@ -112,9 +112,6 @@ export default function GameCanvas({
         y: front.y + newGameState.snake.velocityY,
       };
       if (isDie(newPosition)) {
-        console.log("game over....");
-        moveList = new Denque();
-        setGameStarted(false);
         return;
       }
 
@@ -125,7 +122,7 @@ export default function GameCanvas({
         const list1  = moveList.splice(0, 6);
         const res : moveUpData = await moveSnake(list1);
         if (res.status == 2) {
-          setGameStarted(false);
+          isDie(newPosition,true);
           return
         }
         if (res.score > 0) {
@@ -145,8 +142,16 @@ export default function GameCanvas({
     setGameState(newGameState);
   }
 
-  const isDie = (p:Position) :boolean => {
-    if (p.x < -1533 || p.x >= 1533 || p.y < -1533 || p.y >= 1533) {
+  const isDie = (p:Position,die:boolean=false) :boolean => {
+    if (p.x < -1533 || p.x >= 1533 || p.y < -1533 || p.y >= 1533 || die) {
+      const snakeBody: Position[] = [];
+      for (let i = 0; i < 20; i++) {
+        snakeBody.push({ x: 600, y: 100 + 5 * i });
+      }
+      gameState.snake.snakeBody = new Denque(snakeBody);
+      setGameState(gameState);
+      moveList = new Denque();
+      setGameStarted(false);
       return true;
     }
     return false;

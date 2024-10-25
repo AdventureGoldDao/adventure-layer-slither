@@ -2,7 +2,7 @@
 pragma solidity >=0.8.24;
 
 import {System} from "@latticexyz/world/src/System.sol";
-import {Users, UsersData, GameCodeToGameState} from "../codegen/index.sol";
+import {Users, UsersData} from "../codegen/index.sol";
 import {Position,Orb,UpdatePosition} from "../common.sol";
 
 contract GameStateSystem is System {
@@ -28,40 +28,13 @@ contract GameStateSystem is System {
   }
 
   function stGame(string memory name) public {
-    Users.setUsername(msg.sender,name);
-    addUser();
-  }
-
-  function addUser() public {
-    if (gameStateExistsAndRemove(false)) {
-      GameCodeToGameState.pushPlayers(gameCode,msg.sender);
-    }
+    Users.set(msg.sender,0, name);
   }
 
   function endGame() public {
+    delete gameUpdatePosition[msg.sender];
     Users.deleteRecord(msg.sender);
-    gameStateExistsAndRemove(true);
   }
-
-  function gameStateExistsAndRemove(bool remove) public returns (bool) {
-    address[] memory players = GameCodeToGameState.getPlayers(gameCode);
-    for (uint256 i = 0; i < players.length; i++) {
-      if (players[i] == msg.sender) {
-        if (remove){
-          if (players.length - 1 == i){
-            GameCodeToGameState.popPlayers(gameCode);
-          }else{
-            address a = GameCodeToGameState.getItemPlayers(gameCode,players.length -1);
-            GameCodeToGameState.popPlayers(gameCode);
-            GameCodeToGameState.updatePlayers(gameCode,uint256(i),a);
-          }
-        }
-        return false;
-      }
-    }
-    return true;
-  }
-
 
   function moveSnake(Position[] memory list) public {
     delete gameUpdatePosition[msg.sender];
