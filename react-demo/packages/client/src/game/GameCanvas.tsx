@@ -126,7 +126,15 @@ export default function GameCanvas({
           return
         }
         if (res.score > 0) {
-          gameState.orbs = new Set(res.orbs);
+          res.orbs.forEach(p => {
+            newGameState.orbs.forEach(o => {
+              if (o.position.x == p.position.x && o.position.y == p.position.y) {
+                newGameState.orbs.delete(o);
+                return;
+              }
+            })
+          });
+          // newGameState.orbs = new Set(res.orbs);
           const s : Position[] = newGameState.snake.snakeBody.toArray();
           const last : Position  = s[s.length - 1];
           const secondLast : Position  = s[s.length - 2];

@@ -21,10 +21,7 @@ contract GameStateSystem is System {
 
 
   function getUpdatePosition(address addr) public view returns (UpdatePosition memory _d) {
-    _d.orbs = orbs;
-    _d.score = gameUpdatePosition[addr].score;
-    _d.status = gameUpdatePosition[addr].status;
-    return _d;
+    return gameUpdatePosition[addr];
   }
 
   function stGame(string memory name) public {
@@ -50,6 +47,7 @@ contract GameStateSystem is System {
           Orb memory o = orbs[j];
         if (calculateDistance(add, o.position) <= SNAKE_CIRCLE_RADIUS) {
           gameUpdatePosition[msg.sender].status = 1;
+          gameUpdatePosition[msg.sender].orbs.push(o);
           orbs[j] = orbs[orbs.length - 1];
           orbs.pop();
           if (keccak256(bytes(o.orbSize)) == keccak256(bytes("SMALL"))) {
