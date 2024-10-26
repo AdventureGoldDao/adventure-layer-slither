@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import {UsersData} from "./codegen/tables/Users.sol";
+  enum OrbSize { SMALL, LARGE }
 
   struct Position {
     int32 x;
@@ -9,7 +9,7 @@ import {UsersData} from "./codegen/tables/Users.sol";
   }
   struct Orb {
     Position position;
-    string orbSize;
+    OrbSize orbSize;
     string color;
   }
 

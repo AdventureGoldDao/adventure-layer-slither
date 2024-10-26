@@ -14,8 +14,8 @@ export interface OrbData {
 
 /** An enum representing the two possible orb sizes */
 export enum OrbSize {
-  SMALL = "SMALL",
-  LARGE = "LARGE",
+  SMALL = 0,
+  LARGE = 1,
 }
 
 /**

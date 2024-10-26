@@ -50,21 +50,20 @@ export default function GameCanvas({
                                    }: GameCanvasProps): JSX.Element {
   const {
     systemCalls: {
-      moveSnake, endGame,getOrbData,adventureHeatbeat
+      moveSnake, endGame,getOrbData,adventureHeatbeat, getOrbsLength
     },
   } = useMUD();
 
-  const [toGetOrds, setToGetOrds] = useState(true);
   const onMouseMove = (e: MouseEvent) => {
     mousePos.x = e.pageX;
     mousePos.y = e.pageY;
   };
 
   useEffect(() => {
-    adventureHeatbeat()
+    adventureHeatbeat();
     // updates position of the client's snake every 50 ms
     const interval = setInterval(moveSnakeTick, 50);
-    const interval1 = setInterval(getOrbs, 10000);
+    const interval1 = setInterval(getOrbs, 30000);
     // updates mouse position when moved, determines target direction for snake
     window.addEventListener("mousemove", onMouseMove);
 
@@ -84,14 +83,15 @@ export default function GameCanvas({
     offset.y = window.innerHeight / 2 - front.y;
   }
 
+  let toGetOrds = true;
   let moveList: Denque<Position> = new Denque();
   /**
    * Changes the given snake's velocity to follow the mouse's position,
    * and sends the new position to the Slither+ server
    */
   const getOrbs = async () => {
-    await adventureHeatbeat()
-    setToGetOrds(true)
+    console.log("await adventureHeatbeat():", await adventureHeatbeat())
+    toGetOrds = true
   }
 
   const moveSnakeTick = async () => {
@@ -126,11 +126,6 @@ export default function GameCanvas({
       newGameState.snake.snakeBody.unshift({x: newPosition.x, y: newPosition.y});
       moveList.push({x: Math.round(newPosition.x * 100), y: Math.round(newPosition.y * 100)});
 
-      if (toGetOrds) {
-        setToGetOrds(false)
-        newGameState.orbs = new Set(await getOrbData());
-      }
-
       if (moveList.length > 6) {
         const list1  = moveList.splice(0, 6);
         const res : moveUpData = await moveSnake(list1);
@@ -159,6 +154,12 @@ export default function GameCanvas({
           }
         }
       }
+    }
+    if (toGetOrds) {
+      toGetOrds = false;
+      const orbsArray: OrbData[] = await getOrbData();
+      gameState.orbs = new Set(orbsArray);
+      // console.log("orbs 1111: ", toGetOrds , orbsArray);
     }
     setGameState(newGameState);
   }

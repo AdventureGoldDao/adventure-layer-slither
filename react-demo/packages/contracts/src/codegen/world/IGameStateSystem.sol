@@ -21,13 +21,7 @@ interface IGameStateSystem {
 
   function moveSnake(Position[] memory list) external;
 
+  function getIdx() external view returns (uint256, uint256);
+
   function adventureHeatbeat() external;
-
-  function generateColor(int i) external view returns (string memory);
-
-  function randomCoordinate(int i) external view returns (int32);
-
-  function generateOrbSize(int i) external view returns (string memory);
-
-  function generateRandom(int i) external view returns (uint256);
 }

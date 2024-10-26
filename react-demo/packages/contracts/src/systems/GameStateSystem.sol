@@ -2,11 +2,11 @@
 pragma solidity >=0.8.24;
 
 import {System} from "@latticexyz/world/src/System.sol";
-import {Users, UsersData} from "../codegen/index.sol";
-import {Position,Orb,UpdatePosition} from "../common.sol";
+import {Users} from "../codegen/index.sol";
+import {Position,Orb,OrbSize,UpdatePosition} from "../common.sol";
 
 contract GameStateSystem is System {
-  uint constant MAX_ORB_COUNT = 150;
+  uint256 constant MAX_ORB_COUNT = 150;
   int32 constant MAX_MAP_RADIUS = 151000;
   int32 constant MIN_MAP_RADIUS = -151000;
   uint32 constant gameCode = 12345;
@@ -45,37 +45,22 @@ contract GameStateSystem is System {
 
         for (uint256 j = 0; j < orbs.length; j++) {
           Orb memory o = orbs[j];
-        if (calculateDistance(add, o.position) <= SNAKE_CIRCLE_RADIUS) {
+        if (calculateDistance(add, o.position) <= SNAKE_CIRCLE_RADIUS * SNAKE_CIRCLE_RADIUS) {
           gameUpdatePosition[msg.sender].status = 1;
           gameUpdatePosition[msg.sender].orbs.push(o);
           orbs[j] = orbs[orbs.length - 1];
           orbs.pop();
-          if (keccak256(bytes(o.orbSize)) == keccak256(bytes("SMALL"))) {
-            gameUpdatePosition[msg.sender].score += 1;
-          }else{
-            gameUpdatePosition[msg.sender].score += 5;
-          }
-          Users.setScore(msg.sender,Users.getScore(msg.sender) + uint32(gameUpdatePosition[msg.sender].score));
+          gameUpdatePosition[msg.sender].score += o.orbSize == OrbSize.SMALL ? 1 : 5;
         }
       }
     }
+    Users.setScore(msg.sender,Users.getScore(msg.sender) + uint32(gameUpdatePosition[msg.sender].score));
   }
 
   function calculateDistance(Position memory p1, Position memory p2) internal pure returns (uint256) {
     uint256 dx = abs(p1.x - p2.x);
     uint256 dy = abs(p1.y - p2.y);
-
-    return sqrt(dx * dx + dy * dy);
-  }
-
-  function sqrt(uint256 x) internal pure returns (uint256 y) {
-    if (x == 0) return 0;
-    uint256 z = (x + 1) / 2;
-    y = x;
-    while (z < y) {
-      y = z;
-      z = (x / z + z) / 2;
-    }
+    return dx * dx + dy * dy;
   }
 
   function abs(int32 x) internal pure returns (uint256) {
@@ -83,29 +68,14 @@ contract GameStateSystem is System {
   }
 
   function adventureHeatbeat() public {
-    uint256 len = orbs.length;
-    for (uint256 i = len; i < MAX_ORB_COUNT; i++) {
-      Position memory p = Position(randomCoordinate(int(i)), randomCoordinate(int(i) + 3));
-      orbs.push(Orb(p, generateOrbSize(int(i)), generateColor(int(i))));
-    }
-  }
-
-  function generateColor(int i) public view returns (string memory) {
+    uint256 rand = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender)));
     string[8] memory colors = ["#ff0000","#24f51e","#221fdc","#811fdc","#1fd9dc","#ff6d00","#fdff00","#ff00b2"];
-    return colors[generateRandom(i) % 8];
-  }
-
-  function randomCoordinate(int i) public view returns (int32) {
-    return int32(int(generateRandom(i) % 280001)) - 140000;
-  }
-
-  function generateOrbSize(int i) public view returns (string memory) {
-    uint randomVal = generateRandom(i) % 100;
-    return randomVal <= 75 ? "SMALL" : "LARGE";
-  }
-
-  function generateRandom(int i) public view returns (uint256) {
-    return uint256(keccak256(abi.encodePacked(block.timestamp,i + 54321, msg.sender)));
+    for (uint256 i = orbs.length; i < MAX_ORB_COUNT; i++) {
+      int32 x = int32(int(rand / (i + 1) % 280001)) - 140000;
+      int32 y = int32(int(rand / (i + 3) % 280001)) - 140000;
+      Position memory p = Position(x, y);
+      orbs.push(Orb(p, (rand + i) % 10 >= 7 ? OrbSize.LARGE : OrbSize.SMALL, colors[(rand + i) % 8]));
+    }
   }
 
 }

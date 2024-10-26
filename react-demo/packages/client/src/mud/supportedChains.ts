@@ -28,6 +28,7 @@ const localNitro: MUDChain = {
         },
     }
 };
+
 const Shard1: MUDChain = {
     id: 12340188,
     name: "shard",
@@ -45,7 +46,7 @@ const Shard1: MUDChain = {
 };
 
 const Nitro10: MUDChain = {
-    id: 12340213,
+    id: 12340265,
     name: "shard",
     nativeCurrency: {
         decimals: 18,
@@ -54,8 +55,8 @@ const Nitro10: MUDChain = {
     },
     rpcUrls: {
         default: {
-          http: ["https://slither-demo.adventurelayer.xyz/shard"],
-          webSocket: ["wss://slither-demo.adventurelayer.xyz/shard"],
+          http: ["https://test-game.xuyanzu.com/shard"],
+          webSocket: ["wss://test-game.xuyanzu.com/shard"],
         },
     }
 };
