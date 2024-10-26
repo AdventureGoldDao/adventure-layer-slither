@@ -50,6 +50,7 @@ async function addNetwork(chainId) {
       decimals: 18,
     },
     rpcUrls: ['https://slither-demo.adventurelayer.xyz/shard'], // 替换为目标网络的 RPC URL
+    //rpcUrls: ['https://slither-demo.adventurelayer.xyz/shard'], // 替换为目标网络的 RPC URL
     // blockExplorerUrls: ['https://sepolia.etherscan.io'], // 替换为区块浏览器 URL
   };
 

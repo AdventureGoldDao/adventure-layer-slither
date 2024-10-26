@@ -7,6 +7,8 @@ import {getComponentValue} from "@latticexyz/recs";
 import {ClientComponents} from "./createClientComponents";
 import {SetupNetworkResult} from "./setupNetwork";
 import {Position} from "../game/GameState";
+import { ethers } from 'ethers';
+import {parseGwei,parseAbi} from "viem";
 
 export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
@@ -57,7 +59,13 @@ export function createSystemCalls(
   };
 
   const moveSnake = async (list: Position[]) => {
-    const tx = await worldContract.write.moveSnake([list]);
+    const tx = await walletClient.writeContract({
+      abi: parseAbi(['function moveSnake((int32,int32)[]) nonpayable']),
+      functionName: 'moveSnake',
+      args: [list],
+      maxFeePerGas: parseGwei('20'),
+      maxPriorityFeePerGas: parseGwei('2'),
+    })
     await waitForTransaction(tx);
     return await worldContract.read.getUpdatePosition([walletClient.account.address]);
   };

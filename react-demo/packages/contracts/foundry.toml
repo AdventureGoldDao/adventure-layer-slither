@@ -27,4 +27,4 @@ eth_rpc_url = "http://127.0.0.1:8587"
 eth_rpc_url = "https://slither-demo.adventurelayer.xyz/shard"
 
 [profile.prod]
-eth_rpc_url = "https://rpc.redstonechain.com"
+eth_rpc_url = "https://slither-devnet.adventurelayer.xyz/shard"
