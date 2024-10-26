@@ -422,19 +422,9 @@ export default function Home({
     const address = await connectWallet();
     setAccount(address);
     // }
-
-    doSol();
-  };
-
-  const doSol = async () => {
-    const r = await stGame(username)
-    console.log("adduser success:", r)
-    console.log("adventureHeatbeat:", await adventureHeatbeat())
+    await stGame(username)
     setGameStarted(true)
-    const orbsArray: OrbData[] = await getOrbData();
-    gameState.orbs = new Set(orbsArray);
-    setGameState(gameState);
-  }
+  };
 
   const connectGameAccount = async () => {
     if (window.ethereum) {
