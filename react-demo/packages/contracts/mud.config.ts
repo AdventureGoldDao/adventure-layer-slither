@@ -10,13 +10,6 @@ export default defineWorld({
       },
       key: ["player"],
     },
-    GameCodeToGameState: { //整个游戏的状态
-      schema: {
-        gameCode: "uint32",
-        players: "address[]",
-      },
-      key: ["gameCode"],
-    },
     Balance: {
       schema: {
         player: "address",

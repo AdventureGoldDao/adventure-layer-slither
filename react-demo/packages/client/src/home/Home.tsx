@@ -169,7 +169,6 @@ export default function Home({
   const [privateKey, setPrivateKey] = useState("");
   const [privateBalance, setPrivateBalance] = useState(0);
   const [privateAddress, setPrivateAddress] = useState('');
-  const [inputGamecode, setInputGamecode] = useState("");
   const [errorText, setErrorText] = useState("");
   const [displayHowToPlay, setDisplayHowToPlay] = useState(false);
 
@@ -437,33 +436,6 @@ export default function Home({
     setGameState(gameState);
   }
 
-  // registers the client's websocket to handle joining a game with a code
-  const startGameWithCode = (): void => {
-    if (username.trim().length === 0) {
-      //check that name is not empty
-      setErrorText("Your username should be non-empty!");
-      return;
-    }
-    setErrorText("");
-    try {
-      // registerSocket(
-      //   setScores,
-      //   setGameStarted,
-      //   setErrorText,
-      //   setGameCode,
-      //   orbSet,
-      //   gameState,
-      //   setGameState,
-      //   username,
-      //   true,
-      //   inputGamecode
-      // );
-    } catch (e) {
-      // check server status
-      setErrorText("Error: Could not connect to server!");
-    }
-  };
-
   const connectGameAccount = async () => {
     if (window.ethereum) {
       const networkConfig = await getNetworkConfig()
@@ -597,11 +569,7 @@ export default function Home({
             value={username}
             setValue={setUsername}
             onEnter={() => {
-              if (inputGamecode.length === 0) {
-                startNewGame();
-              } else {
-                startGameWithCode();
-              }
+              startNewGame();
             }}
             placeholder="Type your username here:"
             className="username-input"
