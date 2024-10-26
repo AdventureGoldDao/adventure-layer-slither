@@ -4,7 +4,61 @@ import "./Home.css";
 
 import GameState from "../game/GameState";
 import HowToPlay from "./HowToPlay";
-import { useMUD } from "../MUDContext";
+import { Kbd, Button, Box, Text, VStack, HStack, Input } from "@chakra-ui/react";
+
+import { ethers } from 'ethers';
+import web3, { Web3 } from 'web3';
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { setupCustom } from "../mud/setup";
+import { setBurnerPrivateKey, setConnectedAccount, getConnectedAccount } from "../mud/util";
+import { useCustomMUD, useMUD } from "../MUDContext";
+import { useComponentValue } from "@latticexyz/react";
+
+import { getNetworkConfig } from "../mud/getNetworkConfig";
+import { shortenAddress } from "@usedapp/core";
+import mudConfig from "contracts/mud.config";
+
+async function switchNetwork(targetChainId) {
+  try {
+    // 尝试切换到目标网络
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: Web3.utils.toHex(targetChainId) }],
+    });
+  } catch (switchError) {
+    // 如果目标网络没有添加到钱包，添加网络
+    if (switchError.code === 4902) {
+      await addNetwork(targetChainId);
+    } else {
+      throw switchError;
+    }
+  }
+}
+
+async function addNetwork(chainId) {
+  // const networkConfig = await getNetworkConfig();
+  const networkParams = {
+    chainId: Web3.utils.toHex(chainId), // 目标网络的 Chain ID
+    chainName: 'Adventure Layer Shard', // 目标网络名称
+    nativeCurrency: {
+      name: 'AGLD',
+      symbol: 'AGLD',
+      decimals: 18,
+    },
+    rpcUrls: ['https://slither-demo.adventurelayer.xyz/shard'], // 替换为目标网络的 RPC URL
+    //rpcUrls: ['https://slither-demo.adventurelayer.xyz/shard'], // 替换为目标网络的 RPC URL
+    // blockExplorerUrls: ['https://sepolia.etherscan.io'], // 替换为区块浏览器 URL
+  };
+
+  try {
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [networkParams],
+    });
+  } catch (addError) {
+    console.error("Failed to add network:", addError);
+  }
+}
 
 /**
  * Interface representing data for an HTML input that updates metadata based
@@ -81,10 +135,9 @@ interface HomeProps {
  *
  * @param setGameStarted A function that sets whether or not the client has started playing the game
  * @param setScores A function that sets the current leaderboard (set of scores) for the game
- * @param setGameCode A function that sets the game code for the lobby the client is playing in
  * @param gameState A metadata representation of the current state of the game
  * @param setGameState A function that sets the current state of the game
- * @param orbSet A list of all orbs stored in metadata form
+ * @param setAccountSetup A function that sets whether or not the client has created an account
  * @returns the home page of the Slither+ game
  */
 export default function Home({
@@ -99,24 +152,372 @@ export default function Home({
       stGame,
     },
   } = useMUD();
-  // const uData = useComponentValue(Users, playerEntity);
-  // console.log("uData:", uData)
+  const mudResult = useMUD()
+  const { setMudContext } = useCustomMUD();
 
+  const [timer, setTimer] = useState(null);
   const [username, setUsername] = useState("");
-  const [inputGamecode, setInputGamecode] = useState("");
+  const [tempAccount, setTempAccount] = useState("");
+  const [installDev, setInstallDev] = useState(false);
+  const [account, setAccount] = useState("");
+  const [isReady, setIsReady] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [privateKey, setPrivateKey] = useState("");
+  const [privateBalance, setPrivateBalance] = useState(0);
+  const [privateAddress, setPrivateAddress] = useState('');
   const [errorText, setErrorText] = useState("");
   const [displayHowToPlay, setDisplayHowToPlay] = useState(false);
 
+  // const ethProvider = window.ethereum;
+  const web3 = new Web3(window.ethereum);
+
+  const detectNetworkPrivate = async (setupResult: any, account: string, privateKey: any) => {
+    // const networkConfig = await getNetworkConfig()
+    let targetPrivate = privateKey
+    let pk = ethers.utils.hexZeroPad(ethers.utils.arrayify(privateKey), 32)
+    // ethers.utils.formatBytes32String(privateKey)
+    const bindAddress = await setupResult.systemCalls.getPrivateBindAddress(pk)
+    let targetResult = mudResult
+    if (bindAddress && bindAddress !== account && ethers.constants.AddressZero !== bindAddress) {
+      targetPrivate = generatePrivateKey();
+      pk = ethers.utils.hexZeroPad(ethers.utils.arrayify(targetPrivate), 32)
+
+      // alert(`Generate New Private Key: ${targetPrivate}`)
+      setPrivateKey(targetPrivate)
+      setBurnerPrivateKey(targetPrivate)
+      // networkConfig.privateKey = targetPrivate
+      const newResult = await setupCustom('default')
+      setMudContext(newResult)
+      targetResult = newResult
+    }
+
+    setPrivateKey(targetPrivate);
+    await setupResult.systemCalls.setBindAccountNotExist(targetPrivate, pk)
+    return {
+      privateKey: targetPrivate,
+      setupResult: targetResult,
+    }
+  }
+
+  const initWalletAddress = async () => {
+    const networkConfig = await getNetworkConfig()
+    const targetChainId = networkConfig.chainId;
+    const chainId = await web3.eth.getChainId();
+    if (chainId !== BigInt(targetChainId)) {
+      return
+    }
+
+    // await window.ethereum.request({ method: "eth_requestAccounts" });
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const address = await signer.getAddress();
+    if (!address) {
+      return
+    }
+
+    setTempAccount(address)
+    const existAddress = getConnectedAccount();
+    if (existAddress !== address) {
+      // setTempAccount(address)
+      return
+    }
+    // const accounts = await web3.eth.getAccounts();
+    // if (!accounts || !accounts.length) {
+    //   return
+    // }
+    // const address = accounts[0]
+
+    let setupResult = accountSetup
+    if (!accountSetup) {
+      setupResult = await setupCustom('wallet')
+      setAccountSetup(setupResult)
+    }
+
+    const bindAccount = await setupResult.systemCalls.getUserBindAccount(address)
+    // console.log('Load Private:', bindAccount)
+
+    let currentResult = mudResult
+    let linkedAccount = networkConfig.privateKey
+    if (bindAccount && bindAccount !== networkConfig.privateKey) {
+      linkedAccount = bindAccount
+      setPrivateKey(bindAccount)
+      setBurnerPrivateKey(bindAccount)
+      networkConfig.privateKey = bindAccount
+      const existResult = await setupCustom('default')
+      setMudContext(existResult)
+      currentResult = existResult
+    } else if (!bindAccount && networkConfig.privateKey) {
+      // setPrivateKey(networkConfig.privateKey);
+      // console.log(`Initiating [${address}] <${bindAccount}> <${networkConfig.privateKey}>`)
+      const detectResult = await detectNetworkPrivate(setupResult, address, networkConfig.privateKey)
+      if (!detectResult) {
+        return;
+      }
+      linkedAccount = detectResult.privateKey
+      currentResult = detectResult.setupResult
+      // await setupResult.systemCalls.setBindAccount(networkConfig.privateKey)
+    }
+
+    setAccount(address);
+    setIsConnected(true);
+
+    // Create a wallet instance from the private key
+    const linkedWallet = new ethers.Wallet(linkedAccount);
+
+    // Get the wallet address
+    const linkedAddress = linkedWallet.address;
+    setPrivateAddress(linkedAddress)
+
+    const linkedBalance = await web3.eth.getBalance(linkedAddress);
+    // const balanceValue = new Decimal(linkedBalance.toString()).div(1000000000000000000).toFixed(5)
+    const balanceValue = ethers.utils.formatEther(linkedBalance)
+    setPrivateBalance(balanceValue);
+
+    if (balanceValue >= 0.2) {
+      setIsReady(true);
+    }
+    console.log('Init', linkedAddress, balanceValue)
+
+    if (!installDev) {
+      const { mount: mountDevTools } = await import("@latticexyz/dev-tools");
+      mountDevTools({
+        config: mudConfig,
+        publicClient: currentResult.network.publicClient,
+        walletClient: currentResult.network.walletClient,
+        latestBlock$: currentResult.network.latestBlock$,
+        storedBlockLogs$: currentResult.network.storedBlockLogs$,
+        worldAddress: currentResult.network.worldContract.address,
+        worldAbi: currentResult.network.worldContract.abi,
+        write$: currentResult.network.write$,
+        recsWorld: currentResult.network.world,
+      });
+      setInstallDev(true);
+    }
+  }
+
+  useEffect(() => {
+    getNetworkConfig().then(networkConfig => {
+      setPrivateKey(networkConfig.privateKey)
+
+      initWalletAddress()
+    })
+
+    // systemCalls.getSnakeBody().then((result) => {
+    //   console.log('getSnakeBody:', result)
+    // })
+
+    // systemCalls.getLeaderboardData().then((result) => {
+    //   console.log('getLeaderboardData:', result)
+    // })
+    // setBindAccount('0xcA64108F6D7117922aD403951fA92b782cD81662').then((res) => {
+    //   console.log('setBindAccount:', res);
+    //   return getBindAccountBy().then(testAccount => {
+    //     console.log('getBindAccount:', testAccount)
+    //     return testAccount
+    //   })
+    // })
+
+    return () => {
+      if (timer) {
+        clearInterval(timer)
+      }
+    }
+  }, [])
+
+  const connectWallet = async () => {
+    try {
+      const networkConfig = await getNetworkConfig();
+      const targetChainId = networkConfig.chainId;
+      const chainId = await web3.eth.getChainId();
+      if (chainId !== BigInt(targetChainId)) {
+        try {
+          await switchNetwork(targetChainId);
+        } catch (error) {
+          setErrorText("Failed to switch network:", error);
+          return;
+        }
+      }
+
+      let address = account
+      if (!account) {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        address = await signer.getAddress();
+        setAccount(address)
+        // const accounts = await web3.eth.getAccounts();
+        // if (accounts && accounts.length) {
+        //   address = accounts[0]
+        //   setAccount(address)
+        // }
+      }
+
+      let setupResult = accountSetup
+      if (!accountSetup) {
+        setupResult = await setupCustom('wallet')
+        setAccountSetup(setupResult)
+      }
+
+      try {
+        // const accountResult = await setupResult.systemCalls.getBindAccountBy()
+        // console.log('BindAccount:', accountResult)
+        // const bindAccount = accountResult ? accountResult.account : ''
+        const bindAccount = await setupResult.systemCalls.getUserBindAccount(account)
+        console.log('BindAccount:', bindAccount)
+
+        if (bindAccount && bindAccount !== privateKey) {
+          console.log(`Read Exist Account`)
+          setPrivateKey(bindAccount)
+          setBurnerPrivateKey(bindAccount)
+          networkConfig.privateKey = bindAccount
+          const existResult = await setupCustom('default')
+          setMudContext(existResult)
+        } else if (!bindAccount) {
+          console.log('Set New Account')
+          await detectNetworkPrivate(setupResult, account, privateKey)
+          // await setupResult.systemCalls.setBindAccount(privateKey)
+        }
+      } catch (err) {
+        console.log('BindAccount Err', err)
+        setErrorText('Failed to connect wallet.')
+      }
+
+      return address
+    } catch (error) {
+      setErrorText('Failed to connect wallet.')
+    }
+    return null;
+  }
+
   // registers the client's websocket to handle joining a new game
   const startNewGame = async () => {
+    if (!isConnected) {
+      setErrorText("Your wallet was not connected!");
+      return;
+    }
+    if (!isReady) {
+      setErrorText("You need to recharge game account to continue!");
+      return;
+    }
     if (username.trim().length === 0) {
       setErrorText("Your username should be non-empty!");
       return;
     }
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+
+    const existAddress = getConnectedAccount();
+    const walletAddress = await signer.getAddress();
+    if (walletAddress !== existAddress) {
+      setErrorText('Wallet Address not match, Please refresh to continue');
+      return
+    }
+    // if (!account) {
+    const address = await connectWallet();
+    setAccount(address);
+    // }
     await stGame(username)
     setGameStarted(true)
   };
 
+  const connectGameAccount = async () => {
+    if (window.ethereum) {
+      const networkConfig = await getNetworkConfig()
+      const targetChainId = networkConfig.chainId;
+      const chainId = await web3.eth.getChainId();
+      if (chainId !== BigInt(targetChainId)) {
+        try {
+          await switchNetwork(targetChainId);
+        } catch (error) {
+          setErrorText("Failed to switch network:", error);
+          return;
+        }
+      }
+
+      // const provider = new ethers.providers.Web3Provider(window.ethereum);
+      // let cmdGetAccount = 'eth_requestAccounts'
+      // if (ethProvider.isMetaMask) {
+      // } else if (ethProvider.isPhantom) {
+      //   cmdGetAccount = 'eth_accounts'
+      // }
+      // const accounts = await provider.send(`${cmdGetAccount}`, []);
+      // const walletAddress = accounts[0]
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const walletAddress = await signer.getAddress();
+
+      if (walletAddress) {
+        setConnectedAccount(walletAddress)
+        initWalletAddress();
+      }
+    } else {
+      setErrorText('Please install MetaMask or other Ethereum wallet');
+    }
+  };
+
+  // fetch balance
+  const fetchBalance = async () => {
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const existAddress = getConnectedAccount();
+      const walletAddress = await signer.getAddress();
+      if (walletAddress !== existAddress) {
+        window.location.reload();
+        return
+      }
+
+      const networkConfig = await getNetworkConfig();
+      const targetChainId = networkConfig.chainId;
+      const chainId = await web3.eth.getChainId();
+      if (chainId !== BigInt(targetChainId)) {
+        try {
+          await switchNetwork(targetChainId);
+        } catch (error) {
+          setErrorText("Failed to switch network:", error);
+          return;
+        }
+      }
+
+      const balance = await provider.getBalance(privateAddress);
+      const balanceAmount = ethers.utils.formatEther(balance);
+      setPrivateBalance(balanceAmount);
+
+      if (balanceAmount >= 0.2) {
+        setIsReady(true);
+      }
+    }
+  };
+
+  // transfer funds
+  const transferFunds = async () => {
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      const existAddress = getConnectedAccount();
+      const walletAddress = await signer.getAddress();
+      if (walletAddress !== existAddress) {
+        setErrorText('Wallet Address not match, Please refresh to continue');
+        return
+      }
+      try {
+        const tx = await signer.sendTransaction({
+          to: privateAddress,
+          value: ethers.utils.parseEther('0.2'), // Set amount to transfer
+        });
+        await tx.wait();
+
+        fetchBalance()
+        // alert('Transfer complete');
+      } catch (error) {
+        setErrorText('Transfer failed: ' + error.message);
+      }
+    }
+  };
 
   return (
     <div className="main-container">
@@ -139,38 +540,102 @@ export default function Home({
             +
           </span>
         </h1>
-        <h2
-          className="username-prompt"
-          aria-label="Prompt: Enter your username"
-        >
-          Enter your username:
-        </h2>
-        <ControlledInput
-          value={username}
-          setValue={setUsername}
-          onEnter={() => {
-            startNewGame();
-          }}
-          placeholder="Type your username here:"
-          className="username-input"
-          aria-label="Username input box"
-        />
-        <p className="error-text">{errorText}</p>
-        <div className="container">
+        {/* <div style={{marginTop: "12px"}}>
+          <Kbd>{ account ? shortenAddress(account) : 'offline'}</Kbd>
+          <Kbd>{ privateAddress ? shortenAddress(privateAddress) : 'offline'}</Kbd>
+        </div> */}
+        {account && <div>
+          <h2
+            className="username-prompt"
+            aria-label="Prompt: Enter your username"
+          >
+            Enter your username:
+          </h2>
+          <ControlledInput
+            value={username}
+            setValue={setUsername}
+            onEnter={() => {
+              startNewGame();
+            }}
+            placeholder="Type your username here:"
+            className="username-input"
+            aria-label="Username input box"
+          />
+        </div>}
+        {errorText && <p className="error-text">{errorText}</p>}
+        {!account && <Box p={5} bg="gray.800" color="white" borderRadius="md" width="60%" margin={"5% auto"}>
+          <Box>
+            <Text fontSize="lg" mb={2}>
+              Wallet Address:
+            </Text>
+            <Text bg="gray.700" p={2} borderRadius="md" mb={5}>
+              {tempAccount && shortenAddress(tempAccount) || 'No wallet connected'}
+            </Text>
+          </Box>
+          {/* Connected Wallet */}
+          <VStack spacing={4} align="stretch">
+            {/* Connect Wallet Button */}
+            <Button colorScheme="red" onClick={connectGameAccount}>
+              {account ? 'Connected' : 'Connect To Start Game'}
+            </Button>
+          </VStack>
+        </Box>}
+        {account && privateAddress && <Box p={5} bg="gray.800" color="white" borderRadius="md">
+          {/* Connected Wallet */}
+          <VStack spacing={4} align="stretch">
+            <Box>
+              <Text fontSize="lg" mb={2}>
+                Connected Wallet:
+              </Text>
+              <Text bg="gray.700" p={2} borderRadius="md" mb={2}>
+                {account && shortenAddress(account) || 'No wallet connected'}
+              </Text>
+            </Box>
+
+            {/* Associated Wallet & Balance */}
+            <Box>
+              <Text fontSize="lg" mb={2}>
+                Associated Wallet:
+              </Text>
+              <HStack justify="space-between" bg="gray.700" p={2} borderRadius="md">
+                <Text>{privateAddress && shortenAddress(privateAddress)}</Text>
+                <Text>{privateBalance} AGLD</Text>
+                <Button colorScheme="teal" size="sm" onClick={fetchBalance}>
+                  Refresh Balance
+                </Button>
+              </HStack>
+            </Box>
+
+            {/* Transfer Button */}
+            <Button
+              colorScheme="blue"
+              onClick={transferFunds}
+              isDisabled={!account}
+            >
+              Transfer 0.2 AGLD to Associated Wallet
+            </Button>
+
+            {/* Connect Wallet Button */}
+            {/* <Button colorScheme="teal" onClick={connectWallet}>
+              {account ? 'Connected' : 'Connect Wallet'}
+            </Button> */}
+          </VStack>
+        </Box>}
+        {isConnected && <div className="container">
           <div className="row">
-            <div className="col-lg-5 col-md-5 col-sm-12">
+            <div className="col-lg-12 col-md-12 col-sm-12">
               <button
                 className="btn btn-light new-game-button"
                 aria-label="New Game Button"
+                disabled={!isReady}
                 onClick={startNewGame}
               >
                 Create a new game
               </button>
             </div>
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );
 }
-
