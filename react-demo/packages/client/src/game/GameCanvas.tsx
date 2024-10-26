@@ -1,5 +1,4 @@
-import {Dispatch, SetStateAction, useEffect} from "react";
-
+import {Dispatch, SetStateAction, useEffect, useState} from "react";
 import GameState, { moveUpData, Position} from "./GameState";
 import Snake, {SNAKE_VELOCITY} from "./snake/Snake";
 import Orb, {OrbData} from "./orb/Orb";
@@ -51,18 +50,21 @@ export default function GameCanvas({
                                    }: GameCanvasProps): JSX.Element {
   const {
     systemCalls: {
-      moveSnake, endGame,
+      moveSnake, endGame,getOrbData,adventureHeatbeat
     },
   } = useMUD();
 
+  const [toGetOrds, setToGetOrds] = useState(true);
   const onMouseMove = (e: MouseEvent) => {
     mousePos.x = e.pageX;
     mousePos.y = e.pageY;
   };
 
   useEffect(() => {
+    adventureHeatbeat()
     // updates position of the client's snake every 50 ms
     const interval = setInterval(moveSnakeTick, 50);
+    const interval1 = setInterval(getOrbs, 10000);
     // updates mouse position when moved, determines target direction for snake
     window.addEventListener("mousemove", onMouseMove);
 
@@ -70,9 +72,10 @@ export default function GameCanvas({
       endGame();
       // clean up upon closing
       clearInterval(interval);
+      clearInterval(interval1);
       window.removeEventListener("mousemove", onMouseMove);
     };
-  }, [endGame]);
+  }, [endGame,adventureHeatbeat]);
 
   // calculate offset to center snake on screen and place other objects relative to snake
   const front: Position | undefined = gameState.snake.snakeBody.peekFront();
@@ -86,6 +89,11 @@ export default function GameCanvas({
    * Changes the given snake's velocity to follow the mouse's position,
    * and sends the new position to the Slither+ server
    */
+  const getOrbs = async () => {
+    await adventureHeatbeat()
+    setToGetOrds(true)
+  }
+
   const moveSnakeTick = async () => {
     let newGameState: GameState = {...gameState};
     // remove last position from the end (to simulate movement)
@@ -118,6 +126,11 @@ export default function GameCanvas({
       newGameState.snake.snakeBody.unshift({x: newPosition.x, y: newPosition.y});
       moveList.push({x: Math.round(newPosition.x * 100), y: Math.round(newPosition.y * 100)});
 
+      if (toGetOrds) {
+        setToGetOrds(false)
+        newGameState.orbs = new Set(await getOrbData());
+      }
+
       if (moveList.length > 6) {
         const list1  = moveList.splice(0, 6);
         const res : moveUpData = await moveSnake(list1);
@@ -126,14 +139,14 @@ export default function GameCanvas({
           return
         }
         if (res.score > 0) {
-          res.orbs.forEach(p => {
-            newGameState.orbs.forEach(o => {
-              if (o.position.x == p.position.x && o.position.y == p.position.y) {
-                newGameState.orbs.delete(o);
-                return;
-              }
-            })
-          });
+            res.orbs.forEach(p => {
+              newGameState.orbs.forEach(o => {
+                if (o.position.x == p.position.x && o.position.y == p.position.y) {
+                  newGameState.orbs.delete(o);
+                  return;
+                }
+              })
+            });
           // newGameState.orbs = new Set(res.orbs);
           const s : Position[] = newGameState.snake.snakeBody.toArray();
           const last : Position  = s[s.length - 1];
