@@ -21,7 +21,5 @@ interface IGameStateSystem {
 
   function moveSnake(Position[] memory list) external;
 
-  function getIdx() external view returns (uint256, uint256);
-
   function adventureHeatbeat() external;
 }
