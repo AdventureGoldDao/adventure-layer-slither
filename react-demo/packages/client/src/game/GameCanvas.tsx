@@ -50,7 +50,7 @@ export default function GameCanvas({
                                    }: GameCanvasProps): JSX.Element {
   const {
     systemCalls: {
-      moveSnake, endGame,getOrbData,adventureHeatbeat, getOrbsLength
+      moveSnake, endGame,getOrbData
     },
   } = useMUD();
 
@@ -60,10 +60,9 @@ export default function GameCanvas({
   };
 
   useEffect(() => {
-    adventureHeatbeat();
     // updates position of the client's snake every 50 ms
     const interval = setInterval(moveSnakeTick, 50);
-    const interval1 = setInterval(getOrbs, 30000);
+    const interval1 = setInterval(getOrbs, 10000);
     // updates mouse position when moved, determines target direction for snake
     window.addEventListener("mousemove", onMouseMove);
 
@@ -74,7 +73,7 @@ export default function GameCanvas({
       clearInterval(interval1);
       window.removeEventListener("mousemove", onMouseMove);
     };
-  }, [endGame,adventureHeatbeat]);
+  }, [endGame]);
 
   // calculate offset to center snake on screen and place other objects relative to snake
   const front: Position | undefined = gameState.snake.snakeBody.peekFront();
@@ -90,7 +89,6 @@ export default function GameCanvas({
    * and sends the new position to the Slither+ server
    */
   const getOrbs = async () => {
-    console.log("await adventureHeatbeat():", await adventureHeatbeat())
     toGetOrds = true
   }
 
@@ -158,8 +156,8 @@ export default function GameCanvas({
     if (toGetOrds) {
       toGetOrds = false;
       const orbsArray: OrbData[] = await getOrbData();
+      console.log("updated orbsArray: ", orbsArray.length)
       gameState.orbs = new Set(orbsArray);
-      // console.log("orbs 1111: ", toGetOrds , orbsArray);
     }
     setGameState(newGameState);
   }

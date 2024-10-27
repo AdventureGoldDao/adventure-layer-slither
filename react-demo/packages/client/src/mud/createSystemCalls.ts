@@ -54,10 +54,6 @@ export function createSystemCalls(
     return await waitForTransaction(tx);
   };
 
-  const getOrbsLength = async () => {
-    return await worldContract.read.getIdx();
-  };
-
   const getOrbData = async () => {
     return await worldContract.read.getOrbData();
   };
@@ -119,7 +115,6 @@ export function createSystemCalls(
   };
 
   return {
-    getOrbsLength,
     stGame,
     endGame,
     moveSnake,
