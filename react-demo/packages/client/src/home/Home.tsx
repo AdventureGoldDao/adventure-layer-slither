@@ -18,7 +18,7 @@ import { getNetworkConfig } from "../mud/getNetworkConfig";
 import { shortenAddress } from "@usedapp/core";
 import mudConfig from "contracts/mud.config";
 
-async function switchNetwork(targetChainId) {
+async function switchNetwork(targetChainId, networkConfig) {
   try {
     // 尝试切换到目标网络
     await window.ethereum.request({
@@ -28,14 +28,14 @@ async function switchNetwork(targetChainId) {
   } catch (switchError) {
     // 如果目标网络没有添加到钱包，添加网络
     if (switchError.code === 4902) {
-      await addNetwork(targetChainId);
+      await addNetwork(targetChainId, networkConfig);
     } else {
       throw switchError;
     }
   }
 }
 
-async function addNetwork(chainId) {
+async function addNetwork(chainId, networkConfig) {
   // const networkConfig = await getNetworkConfig();
   const networkParams = {
     chainId: Web3.utils.toHex(chainId), // 目标网络的 Chain ID
@@ -45,10 +45,14 @@ async function addNetwork(chainId) {
       symbol: 'AGLD',
       decimals: 18,
     },
-    rpcUrls: ['https://test-game.xuyanzu.com/shard'], // 替换为目标网络的 RPC URL
-    //rpcUrls: ['https://test-game.xuyanzu.com/shard'], // 替换为目标网络的 RPC URL
+    rpcUrls: [],
+    // rpcUrls: ['https://test-game.xuyanzu.com/shard'],
+    // rpcUrls: ['https://slither-demo.adventurelayer.xyz/shard'],
     // blockExplorerUrls: ['https://sepolia.etherscan.io'], // 替换为区块浏览器 URL
   };
+  if (networkConfig.chain && networkConfig.chain.rpcUrls && networkConfig.chain.rpcUrls.default) {
+    networkParams.rpcUrls = networkConfig.chain.rpcUrls.default.http
+  }
 
   try {
     await window.ethereum.request({
@@ -302,21 +306,6 @@ export default function Home({
       initWalletAddress()
     })
 
-    // systemCalls.getSnakeBody().then((result) => {
-    //   console.log('getSnakeBody:', result)
-    // })
-
-    // systemCalls.getLeaderboardData().then((result) => {
-    //   console.log('getLeaderboardData:', result)
-    // })
-    // setBindAccount('0xcA64108F6D7117922aD403951fA92b782cD81662').then((res) => {
-    //   console.log('setBindAccount:', res);
-    //   return getBindAccountBy().then(testAccount => {
-    //     console.log('getBindAccount:', testAccount)
-    //     return testAccount
-    //   })
-    // })
-
     return () => {
       if (timer) {
         clearInterval(timer)
@@ -331,7 +320,7 @@ export default function Home({
       const chainId = await web3.eth.getChainId();
       if (chainId !== BigInt(targetChainId)) {
         try {
-          await switchNetwork(targetChainId);
+          await switchNetwork(targetChainId, networkConfig);
         } catch (error) {
           setErrorText("Failed to switch network:", error);
           return;
@@ -429,7 +418,7 @@ export default function Home({
       const chainId = await web3.eth.getChainId();
       if (chainId !== BigInt(targetChainId)) {
         try {
-          await switchNetwork(targetChainId);
+          await switchNetwork(targetChainId, networkConfig);
         } catch (error) {
           setErrorText("Failed to switch network:", error);
           return;
@@ -475,7 +464,7 @@ export default function Home({
       const chainId = await web3.eth.getChainId();
       if (chainId !== BigInt(targetChainId)) {
         try {
-          await switchNetwork(targetChainId);
+          await switchNetwork(targetChainId, networkConfig);
         } catch (error) {
           setErrorText("Failed to switch network:", error);
           return;
@@ -535,10 +524,10 @@ export default function Home({
           How to play?
         </button>
         <h1 className="main-title">
-          Slither
-          <span className="title-plus" aria-label="Title: Slither+">
+          Adventure Layer Slither
+          {/* <span className="title-plus" aria-label="Title: Adventure Layer Slither">
             +
-          </span>
+          </span> */}
         </h1>
         {/* <div style={{marginTop: "12px"}}>
           <Kbd>{ account ? shortenAddress(account) : 'offline'}</Kbd>

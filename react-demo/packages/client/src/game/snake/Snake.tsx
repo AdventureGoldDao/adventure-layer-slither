@@ -28,19 +28,68 @@ export const SNAKE_VELOCITY = 8;
 export default function Snake({
   snake,
   offset,
+  mousePos,
 }: {
   snake: SnakeData;
   offset: Position;
+  mousePos: Position;
 }): JSX.Element {
+  const snakeList = snake.snakeBody.toArray()
+
+  const head = snakeList[0];
+  const neck = snakeList[1]; // 用第二个部位来计算朝向
+
+  let direction = "right";
+  if (neck) {
+    const dx = head.x - neck.x;
+    const dy = head.y - neck.y;
+    if (dx > 0) direction = "right";
+    if (dx < 0) direction = "left";
+    if (dy > 0) direction = "down";
+    if (dy < 0) direction = "up";
+  }
+
+  const angle = Math.atan2(
+    mousePos.y - (head.y + offset.y),
+    mousePos.x - (head.x + offset.x)
+  );
   return (
     <div>
-      {snake.snakeBody.toArray().map((bodyPart: Position, ind: number) => (
-        <div
-          className="snake"
-          key={ind}
-          style={{ left: bodyPart.x + offset.x, top: bodyPart.y + offset.y }}
-        />
-      ))}
+      {
+        snakeList.slice()
+        .reverse()
+        .map((bodyPart: Position, ind: number) => {
+        if (ind === snakeList.length - 1) {
+          return (
+            <div
+              className={`snake-head`}
+              key={ind}
+              style={{
+                left: bodyPart.x + offset.x,
+                top: bodyPart.y + offset.y,
+              }}
+            >
+              <div
+                className="snake-head-inner"
+                style={{ transform: `rotate(${angle}rad)` }}
+              >
+                {/* <div className="center-dot"></div> */}
+                <div className="eye eye-left"></div>
+                <div className="eye eye-right"></div>
+              </div>
+            </div>
+          );
+        }
+        const bodyClass = ind % 2 === 0 ? "snake light" : "snake dark";
+        return (
+          <div
+            // className="snake"
+            className={bodyClass}
+            key={ind}
+            style={{ left: bodyPart.x + offset.x, top: bodyPart.y + offset.y }}
+          />
+        );
+      })}
     </div>
   );
 }

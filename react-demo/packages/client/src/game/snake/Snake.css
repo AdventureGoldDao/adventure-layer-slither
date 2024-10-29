@@ -4,6 +4,114 @@
   height: 35px;
   width: 35px;
   border-radius: 50%;
+  border: 1px solid white;
+  background-color: #fff;
+}
+
+.snake-head {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  height: 35px;
+  width: 35px;
+  border-radius: 50%;
+  background-color: #fff;
   border: 2px solid white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.snake-head .center-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ffcc00;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00;
+}
+
+.snake-head .eye {
+  position: absolute;
+  width: 12px;
+  height: 12px;
   background-color: white;
+  border: #000 1px solid;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.snake-head .eye::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  background-color: black;
+  border-radius: 50%;
+}
+
+.snake-head .eye-left {
+  left: -1px;
+  top: 2px;
+}
+
+.snake-head .eye-right {
+  left: -1px;
+  bottom: 2px;
+}
+
+.snake-head.right .eye-left {
+  left: 4px;
+  top: 5px;
+}
+
+.snake-head.right .eye-right {
+  right: 4px;
+  top: 15px;
+}
+
+.snake-head.left .eye-left {
+  left: 4px;
+  top: 20px;
+}
+
+.snake-head.left .eye-right {
+  right: 4px;
+  top: 20px;
+}
+
+.snake-head.up .eye-left {
+  left: 20px;
+  top: 4px;
+}
+
+.snake-head.up .eye-right {
+  right: 20px;
+  top: 4px;
+}
+
+.snake-head.down .eye-left {
+  left: 20px;
+  bottom: 4px;
+}
+
+.snake-head.down .eye-right {
+  right: 20px;
+  bottom: 4px;
+}
+
+.snake .tongue {
+  width: 10px;
+  height: 15px;
+  background-color: red;
+  border-radius: 50%;
+  position: absolute;
+  bottom: -8px;
+}
+
+.snake.dark {
+  background-color: #444;
+}
+
+.snake.light {
+  background-color: #fff;
 }

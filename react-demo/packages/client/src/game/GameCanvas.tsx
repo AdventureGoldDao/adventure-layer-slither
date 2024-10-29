@@ -169,7 +169,7 @@ export default function GameCanvas({
 
   return (
     <div>
-      <Snake snake={gameState.snake} offset={offset} />
+      <Snake snake={gameState.snake} offset={offset} mousePos={mousePos} />
       {orbList.map((entity, ind) => (
         <Orb orbInfo={getComponentValueStrict(OrbLists, entity)} offset={offset} key={ind} />
       ))}
