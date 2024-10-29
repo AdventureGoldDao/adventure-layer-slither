@@ -1,11 +1,12 @@
 import { Position } from "../GameState";
 import "./orb.css";
-import {useMUD} from "../../MUDContext";
 
 /** A metadata representation of the orb */
 export interface OrbData {
-  /** The position of the orb on the map */
-  position: Position;
+  /** The x-coordinate of the position (horizontally) */
+  x: number;
+  /** The y-coordinate of the position (vertically) */
+  y: number;
   /** The size of the orb, as an enum */
   orbSize: OrbSize;
   /** The hexidecimal color of the orb, serialized as a string */
@@ -36,8 +37,8 @@ export default function Orb({
     <div
       className="circle"
       style={{
-        top: `${orbInfo.position.y / 100.0 + offset.y}px`,
-        left: `${orbInfo.position.x / 100.0 + offset.x}px`,
+        top: `${orbInfo.y / 100.0 + offset.y}px`,
+        left: `${orbInfo.x / 100.0 + offset.x}px`,
         height: `${orbInfo.orbSize === OrbSize.SMALL ? 7.5 : 15}px`,
         width: `${orbInfo.orbSize === OrbSize.SMALL ? 7.5 : 15}px`,
         backgroundColor: `${orbInfo.color}`,

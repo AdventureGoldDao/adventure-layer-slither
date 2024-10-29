@@ -12,4 +12,8 @@ import { UsersData } from "../index.sol";
  */
 interface IUsersSystem {
   function getData() external view returns (UsersData memory);
+
+  function stGame(string memory name) external;
+
+  function endGame() external;
 }

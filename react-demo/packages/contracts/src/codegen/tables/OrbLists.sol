@@ -16,23 +16,27 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-struct UsersData {
-  uint32 score;
-  uint8 status;
-  string username;
+// Import user types
+import { OrbSize } from "../common.sol";
+
+struct OrbListsData {
+  int32 x;
+  int32 y;
+  OrbSize orbSize;
+  string color;
 }
 
-library Users {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "", name: "Users", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462000000000000000000000000000055736572730000000000000000000000);
+library OrbLists {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "", name: "OrbLists", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746200000000000000000000000000004f72624c697374730000000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0005020104010000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0009030104040100000000000000000000000000000000000000000000000000);
 
-  // Hex-encoded key schema of (address)
-  Schema constant _keySchema = Schema.wrap(0x0014010061000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint32, uint8, string)
-  Schema constant _valueSchema = Schema.wrap(0x000502010300c500000000000000000000000000000000000000000000000000);
+  // Hex-encoded key schema of (uint16)
+  Schema constant _keySchema = Schema.wrap(0x0002010001000000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (int32, int32, uint8, string)
+  Schema constant _valueSchema = Schema.wrap(0x00090301232300c5000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -40,7 +44,7 @@ library Users {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "player";
+    keyNames[0] = "id";
   }
 
   /**
@@ -48,10 +52,11 @@ library Users {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](3);
-    fieldNames[0] = "score";
-    fieldNames[1] = "status";
-    fieldNames[2] = "username";
+    fieldNames = new string[](4);
+    fieldNames[0] = "x";
+    fieldNames[1] = "y";
+    fieldNames[2] = "orbSize";
+    fieldNames[3] = "color";
   }
 
   /**
@@ -69,137 +74,179 @@ library Users {
   }
 
   /**
-   * @notice Get score.
+   * @notice Get x.
    */
-  function getScore(address player) internal view returns (uint32 score) {
+  function getX(uint16 id) internal view returns (int32 x) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
+    return (int32(uint32(bytes4(_blob))));
   }
 
   /**
-   * @notice Get score.
+   * @notice Get x.
    */
-  function _getScore(address player) internal view returns (uint32 score) {
+  function _getX(uint16 id) internal view returns (int32 x) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint32(bytes4(_blob)));
+    return (int32(uint32(bytes4(_blob))));
   }
 
   /**
-   * @notice Set score.
+   * @notice Set x.
    */
-  function setScore(address player, uint32 score) internal {
+  function setX(uint16 id, int32 x) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((score)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((x)), _fieldLayout);
   }
 
   /**
-   * @notice Set score.
+   * @notice Set x.
    */
-  function _setScore(address player, uint32 score) internal {
+  function _setX(uint16 id, int32 x) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((score)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((x)), _fieldLayout);
   }
 
   /**
-   * @notice Get status.
+   * @notice Get y.
    */
-  function getStatus(address player) internal view returns (uint8 status) {
+  function getY(uint16 id) internal view returns (int32 y) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
-    return (uint8(bytes1(_blob)));
+    return (int32(uint32(bytes4(_blob))));
   }
 
   /**
-   * @notice Get status.
+   * @notice Get y.
    */
-  function _getStatus(address player) internal view returns (uint8 status) {
+  function _getY(uint16 id) internal view returns (int32 y) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
-    return (uint8(bytes1(_blob)));
+    return (int32(uint32(bytes4(_blob))));
   }
 
   /**
-   * @notice Set status.
+   * @notice Set y.
    */
-  function setStatus(address player, uint8 status) internal {
+  function setY(uint16 id, int32 y) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((status)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((y)), _fieldLayout);
   }
 
   /**
-   * @notice Set status.
+   * @notice Set y.
    */
-  function _setStatus(address player, uint8 status) internal {
+  function _setY(uint16 id, int32 y) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((status)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((y)), _fieldLayout);
   }
 
   /**
-   * @notice Get username.
+   * @notice Get orbSize.
    */
-  function getUsername(address player) internal view returns (string memory username) {
+  function getOrbSize(uint16 id) internal view returns (OrbSize orbSize) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return OrbSize(uint8(bytes1(_blob)));
+  }
+
+  /**
+   * @notice Get orbSize.
+   */
+  function _getOrbSize(uint16 id) internal view returns (OrbSize orbSize) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return OrbSize(uint8(bytes1(_blob)));
+  }
+
+  /**
+   * @notice Set orbSize.
+   */
+  function setOrbSize(uint16 id, OrbSize orbSize) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked(uint8(orbSize)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set orbSize.
+   */
+  function _setOrbSize(uint16 id, OrbSize orbSize) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked(uint8(orbSize)), _fieldLayout);
+  }
+
+  /**
+   * @notice Get color.
+   */
+  function getColor(uint16 id) internal view returns (string memory color) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(id));
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
     return (string(_blob));
   }
 
   /**
-   * @notice Get username.
+   * @notice Get color.
    */
-  function _getUsername(address player) internal view returns (string memory username) {
+  function _getColor(uint16 id) internal view returns (string memory color) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
     return (string(_blob));
   }
 
   /**
-   * @notice Set username.
+   * @notice Set color.
    */
-  function setUsername(address player, string memory username) internal {
+  function setColor(uint16 id, string memory color) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
-    StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((username)));
+    StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((color)));
   }
 
   /**
-   * @notice Set username.
+   * @notice Set color.
    */
-  function _setUsername(address player, string memory username) internal {
+  function _setColor(uint16 id, string memory color) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
-    StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((username)));
+    StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((color)));
   }
 
   /**
-   * @notice Get the length of username.
+   * @notice Get the length of color.
    */
-  function lengthUsername(address player) internal view returns (uint256) {
+  function lengthColor(uint16 id) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -208,11 +255,11 @@ library Users {
   }
 
   /**
-   * @notice Get the length of username.
+   * @notice Get the length of color.
    */
-  function _lengthUsername(address player) internal view returns (uint256) {
+  function _lengthColor(uint16 id) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -221,12 +268,12 @@ library Users {
   }
 
   /**
-   * @notice Get an item of username.
+   * @notice Get an item of color.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemUsername(address player, uint256 _index) internal view returns (string memory) {
+  function getItemColor(uint16 id, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
@@ -235,12 +282,12 @@ library Users {
   }
 
   /**
-   * @notice Get an item of username.
+   * @notice Get an item of color.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemUsername(address player, uint256 _index) internal view returns (string memory) {
+  function _getItemColor(uint16 id, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
@@ -249,51 +296,51 @@ library Users {
   }
 
   /**
-   * @notice Push a slice to username.
+   * @notice Push a slice to color.
    */
-  function pushUsername(address player, string memory _slice) internal {
+  function pushColor(uint16 id, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
   }
 
   /**
-   * @notice Push a slice to username.
+   * @notice Push a slice to color.
    */
-  function _pushUsername(address player, string memory _slice) internal {
+  function _pushColor(uint16 id, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
   }
 
   /**
-   * @notice Pop a slice from username.
+   * @notice Pop a slice from color.
    */
-  function popUsername(address player) internal {
+  function popColor(uint16 id) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 1);
   }
 
   /**
-   * @notice Pop a slice from username.
+   * @notice Pop a slice from color.
    */
-  function _popUsername(address player) internal {
+  function _popColor(uint16 id) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 1);
   }
 
   /**
-   * @notice Update a slice of username at `_index`.
+   * @notice Update a slice of color at `_index`.
    */
-  function updateUsername(address player, uint256 _index, string memory _slice) internal {
+  function updateColor(uint16 id, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -302,11 +349,11 @@ library Users {
   }
 
   /**
-   * @notice Update a slice of username at `_index`.
+   * @notice Update a slice of color at `_index`.
    */
-  function _updateUsername(address player, uint256 _index, string memory _slice) internal {
+  function _updateColor(uint16 id, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -317,9 +364,9 @@ library Users {
   /**
    * @notice Get the full data.
    */
-  function get(address player) internal view returns (UsersData memory _table) {
+  function get(uint16 id) internal view returns (OrbListsData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -332,9 +379,9 @@ library Users {
   /**
    * @notice Get the full data.
    */
-  function _get(address player) internal view returns (UsersData memory _table) {
+  function _get(uint16 id) internal view returns (OrbListsData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -347,14 +394,14 @@ library Users {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(address player, uint32 score, uint8 status, string memory username) internal {
-    bytes memory _staticData = encodeStatic(score, status);
+  function set(uint16 id, int32 x, int32 y, OrbSize orbSize, string memory color) internal {
+    bytes memory _staticData = encodeStatic(x, y, orbSize);
 
-    EncodedLengths _encodedLengths = encodeLengths(username);
-    bytes memory _dynamicData = encodeDynamic(username);
+    EncodedLengths _encodedLengths = encodeLengths(color);
+    bytes memory _dynamicData = encodeDynamic(color);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -362,14 +409,14 @@ library Users {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(address player, uint32 score, uint8 status, string memory username) internal {
-    bytes memory _staticData = encodeStatic(score, status);
+  function _set(uint16 id, int32 x, int32 y, OrbSize orbSize, string memory color) internal {
+    bytes memory _staticData = encodeStatic(x, y, orbSize);
 
-    EncodedLengths _encodedLengths = encodeLengths(username);
-    bytes memory _dynamicData = encodeDynamic(username);
+    EncodedLengths _encodedLengths = encodeLengths(color);
+    bytes memory _dynamicData = encodeDynamic(color);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -377,14 +424,14 @@ library Users {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(address player, UsersData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.score, _table.status);
+  function set(uint16 id, OrbListsData memory _table) internal {
+    bytes memory _staticData = encodeStatic(_table.x, _table.y, _table.orbSize);
 
-    EncodedLengths _encodedLengths = encodeLengths(_table.username);
-    bytes memory _dynamicData = encodeDynamic(_table.username);
+    EncodedLengths _encodedLengths = encodeLengths(_table.color);
+    bytes memory _dynamicData = encodeDynamic(_table.color);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -392,14 +439,14 @@ library Users {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(address player, UsersData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.score, _table.status);
+  function _set(uint16 id, OrbListsData memory _table) internal {
+    bytes memory _staticData = encodeStatic(_table.x, _table.y, _table.orbSize);
 
-    EncodedLengths _encodedLengths = encodeLengths(_table.username);
-    bytes memory _dynamicData = encodeDynamic(_table.username);
+    EncodedLengths _encodedLengths = encodeLengths(_table.color);
+    bytes memory _dynamicData = encodeDynamic(_table.color);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -407,10 +454,12 @@ library Users {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (uint32 score, uint8 status) {
-    score = (uint32(Bytes.getBytes4(_blob, 0)));
+  function decodeStatic(bytes memory _blob) internal pure returns (int32 x, int32 y, OrbSize orbSize) {
+    x = (int32(uint32(Bytes.getBytes4(_blob, 0))));
 
-    status = (uint8(Bytes.getBytes1(_blob, 4)));
+    y = (int32(uint32(Bytes.getBytes4(_blob, 4))));
+
+    orbSize = OrbSize(uint8(Bytes.getBytes1(_blob, 8)));
   }
 
   /**
@@ -419,13 +468,13 @@ library Users {
   function decodeDynamic(
     EncodedLengths _encodedLengths,
     bytes memory _blob
-  ) internal pure returns (string memory username) {
+  ) internal pure returns (string memory color) {
     uint256 _start;
     uint256 _end;
     unchecked {
       _end = _encodedLengths.atIndex(0);
     }
-    username = (string(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
+    color = (string(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
   }
 
   /**
@@ -438,18 +487,18 @@ library Users {
     bytes memory _staticData,
     EncodedLengths _encodedLengths,
     bytes memory _dynamicData
-  ) internal pure returns (UsersData memory _table) {
-    (_table.score, _table.status) = decodeStatic(_staticData);
+  ) internal pure returns (OrbListsData memory _table) {
+    (_table.x, _table.y, _table.orbSize) = decodeStatic(_staticData);
 
-    (_table.username) = decodeDynamic(_encodedLengths, _dynamicData);
+    (_table.color) = decodeDynamic(_encodedLengths, _dynamicData);
   }
 
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(address player) internal {
+  function deleteRecord(uint16 id) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -457,9 +506,9 @@ library Users {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(address player) internal {
+  function _deleteRecord(uint16 id) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -468,18 +517,18 @@ library Users {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint32 score, uint8 status) internal pure returns (bytes memory) {
-    return abi.encodePacked(score, status);
+  function encodeStatic(int32 x, int32 y, OrbSize orbSize) internal pure returns (bytes memory) {
+    return abi.encodePacked(x, y, orbSize);
   }
 
   /**
    * @notice Tightly pack dynamic data lengths using this table's schema.
    * @return _encodedLengths The lengths of the dynamic fields (packed into a single bytes32 value).
    */
-  function encodeLengths(string memory username) internal pure returns (EncodedLengths _encodedLengths) {
+  function encodeLengths(string memory color) internal pure returns (EncodedLengths _encodedLengths) {
     // Lengths are effectively checked during copy by 2**40 bytes exceeding gas limits
     unchecked {
-      _encodedLengths = EncodedLengthsLib.pack(bytes(username).length);
+      _encodedLengths = EncodedLengthsLib.pack(bytes(color).length);
     }
   }
 
@@ -487,8 +536,8 @@ library Users {
    * @notice Tightly pack dynamic (variable length) data using this table's schema.
    * @return The dynamic data, encoded into a sequence of bytes.
    */
-  function encodeDynamic(string memory username) internal pure returns (bytes memory) {
-    return abi.encodePacked(bytes((username)));
+  function encodeDynamic(string memory color) internal pure returns (bytes memory) {
+    return abi.encodePacked(bytes((color)));
   }
 
   /**
@@ -498,14 +547,15 @@ library Users {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
-    uint32 score,
-    uint8 status,
-    string memory username
+    int32 x,
+    int32 y,
+    OrbSize orbSize,
+    string memory color
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(score, status);
+    bytes memory _staticData = encodeStatic(x, y, orbSize);
 
-    EncodedLengths _encodedLengths = encodeLengths(username);
-    bytes memory _dynamicData = encodeDynamic(username);
+    EncodedLengths _encodedLengths = encodeLengths(color);
+    bytes memory _dynamicData = encodeDynamic(color);
 
     return (_staticData, _encodedLengths, _dynamicData);
   }
@@ -513,9 +563,9 @@ library Users {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(address player) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint16 id) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(player)));
+    _keyTuple[0] = bytes32(uint256(id));
 
     return _keyTuple;
   }
