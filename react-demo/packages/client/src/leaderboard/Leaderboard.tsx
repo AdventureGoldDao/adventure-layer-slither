@@ -24,8 +24,8 @@ export default function Leaderboard(): JSX.Element {
           </th>
         </tr>
         <tr>
-          <td className="username-entry">{user?.username}</td>
-          <td className="score-entry">{user?.score}</td>
+          <td className="username-entry">{user?.username ?? ""}</td>
+          <td className="score-entry">{user?.score ?? 0}</td>
         </tr>
       </table>
     </div>
