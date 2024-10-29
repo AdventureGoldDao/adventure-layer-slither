@@ -283,7 +283,7 @@ export default function Home({
     console.log('Init', linkedAddress, balanceValue)
 
     if (!installDev) {
-      const { mount: mountDevTools } = await import("@latticexyz/dev-tools");
+      const { mount: mountDevTools } = await import("dev-tools");
       mountDevTools({
         config: mudConfig,
         publicClient: currentResult.network.publicClient,

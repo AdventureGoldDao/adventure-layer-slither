@@ -25,6 +25,7 @@
     "@latticexyz/world": "2.2.8",
     "@usedapp/core": "^1.2.16",
     "contracts": "workspace:*",
+    "dev-tools": "workspace:*",
     "ethers": "5.7.0",
     "framer-motion": "^11.8.0",
     "react-redux": "^9.1.2",
