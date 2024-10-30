@@ -16,24 +16,26 @@ contract GameStateSystem is System {
   Orb[150] private orbs;
 
   function moveSnake(Position[] memory list) public {
-    UsersData memory uData = Users.get(msg.sender);
-      for (uint256 i = 0; i < list.length; i++) {
-        Position memory add = list[i];
-        if (add.x >= MAX_MAP_RADIUS || add.x <= MIN_MAP_RADIUS || add.y >= MAX_MAP_RADIUS || add.y <= MIN_MAP_RADIUS) {
-          uData.status = 1;
+    uint32 score = 0;
+    for (uint256 i = 0; i < list.length; i++) {
+      Position memory add = list[i];
+      if (add.x >= MAX_MAP_RADIUS || add.x <= MIN_MAP_RADIUS || add.y >= MAX_MAP_RADIUS || add.y <= MIN_MAP_RADIUS) {
+        Users.setStatus(msg.sender,1);
+        block;
+      }
+      for (uint256 j = 0; j < orbs.length; j++) {
+        Orb memory o = orbs[j];
+        if (o.position.x != 0 && o.position.y != 0 && calculateDistance(add, o.position) <= SNAKE_CIRCLE_RADIUS * SNAKE_CIRCLE_RADIUS) {
+          orbs[j] = Orb(Position(0,0), OrbSize.SMALL);
+          OrbLists.deleteRecord(uint16(j));
+          score += o.orbSize == OrbSize.SMALL ? 1 : 5;
           block;
         }
-        for (uint256 j = 0; j < orbs.length; j++) {
-          Orb memory o = orbs[j];
-          if (o.position.x != 0 && o.position.y != 0 && calculateDistance(add, o.position) <= SNAKE_CIRCLE_RADIUS * SNAKE_CIRCLE_RADIUS) {
-            orbs[j] = Orb(Position(0,0), OrbSize.SMALL);
-            OrbLists.deleteRecord(uint16(j));
-            uData.score += o.orbSize == OrbSize.SMALL ? 1 : 5;
-            block;
-          }
       }
     }
-    Users.set(msg.sender,uData);
+    if (score > 0) {
+      Users.setScore(msg.sender,Users.getScore(msg.sender) + score);
+    }
   }
 
   function calculateDistance(Position memory p1, Position memory p2) internal pure returns (uint256) {
