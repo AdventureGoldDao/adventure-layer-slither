@@ -80,7 +80,7 @@ export default function Snake({
             </div>
           );
         }
-        const bodyClass = ind % 2 === 0 ? "snake light" : "snake dark";
+        const bodyClass = (snakeList.length - ind) % 2 === 0 ? "snake light" : "snake dark";
         return (
           <div
             // className="snake"
