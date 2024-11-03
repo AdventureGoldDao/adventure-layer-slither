@@ -15,6 +15,18 @@ contract GameStateSystem is System {
   uint256 constant SNAKE_CIRCLE_RADIUS = 3500;
   Orb[150] private orbs;
 
+  event endGameEvent(address user, uint256 score);
+  function endGame() public {
+    UsersData memory uData = Users.get(msg.sender);
+    if (uData.score > 0){
+      emit endGameEvent(msg.sender,uData.score);
+      uData.score = 0;
+    }
+    uData.username = "";
+    uData.status = 0;
+    Users.set(msg.sender, uData);
+  }
+
   function moveSnake(Position[] memory list) public {
     uint32 score = 0;
     for (uint256 i = 0; i < list.length; i++) {

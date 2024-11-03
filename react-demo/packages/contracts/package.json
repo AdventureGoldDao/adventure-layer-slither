@@ -13,14 +13,17 @@
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier --write 'src/**/*.sol'",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
-    "test": "tsc --noEmit && mud test"
+    "test": "tsc --noEmit && mud test",
+    "listen": "node scripts/listen.js"
   },
   "dependencies": {
     "@latticexyz/cli": "2.2.8",
     "@latticexyz/schema-type": "2.2.8",
     "@latticexyz/store": "2.2.8",
     "@latticexyz/world": "2.2.8",
-    "@latticexyz/world-modules": "2.2.8"
+    "@latticexyz/world-modules": "2.2.8",
+    "ethers": "^5.6.1",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

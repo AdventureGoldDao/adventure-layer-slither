@@ -5,18 +5,12 @@ import {Users, UsersData} from "../codegen/index.sol";
 import {System} from "@latticexyz/world/src/System.sol";
 
 contract UsersSystem is System {
-
-  //get score
   function getData() public view returns (UsersData memory) {
     return Users.get(msg.sender);
   }
 
   function stGame(string memory name) public {
-    Users.set(msg.sender,0,0, name);
-  }
-
-  function endGame() public {
-    Users.deleteRecord(msg.sender);
+    Users.set(msg.sender, 0,0,name);
   }
 
 }
