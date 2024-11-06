@@ -5,7 +5,6 @@ const nodeUrl = process.env.NODE_URL;
 const adminPrivateKey = process.env.PRIVATE_KEY;
 const contractAddress = process.env.WORLD_ADDRESS;
 
-// 创建提供者
 const provider = new ethers.providers.JsonRpcProvider(nodeUrl);
 
 const contractABI = [
@@ -15,9 +14,8 @@ const contractABI = [
 const contract = new ethers.Contract(contractAddress, contractABI, provider);
 const wallet = new ethers.Wallet(adminPrivateKey, provider);
 
-// 监听事件
 contract.on('endGameEvent', async (user, score) => {
-  console.log(`Game ended for user: ${user} with score: ${score.toString()}, send ${score.toNumber() / 100} ETH`);
+  console.log(`Game ended for user: ${user} with score: ${score.toString()}, send ${score.toNumber() / 100} AGLD`);
   const amountToTransfer = ethers.utils.parseUnits((score.toNumber() / 100).toString(), 18);
   try {
     const tx = await wallet.sendTransaction({
@@ -33,5 +31,5 @@ contract.on('endGameEvent', async (user, score) => {
 provider.on('error', (error) => {
   console.error('Provider error:', error);
 });
-console.error('start listen:', contractAddress);
+console.log('start listen:', contractAddress);
 process.stdin.resume();
