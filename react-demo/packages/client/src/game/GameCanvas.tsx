@@ -84,7 +84,7 @@ export default function GameCanvas({
         // clean up upon closing
         clearInterval(interval);
       };
-  }, [user.status,user.score,oldScore]);
+  }, [user?.status,user?.score,oldScore]);
 
   // calculate offset to center snake on screen and place other objects relative to snake
   const front: Position | undefined = gameState.snake.snakeBody.peekFront();
@@ -123,7 +123,7 @@ export default function GameCanvas({
         x: front.x + newGameState.snake.velocityX,
         y: front.y + newGameState.snake.velocityY,
       };
-      if (isDie(newPosition, user.status == 1)) {
+      if (isDie(newPosition, user?.status == 1)) {
         return;
       }
 
@@ -135,7 +135,7 @@ export default function GameCanvas({
         moveSnake(list1);
       }
 
-      const inScore = user.score - oldScore;
+      const inScore = (user?.score ?? 0) - oldScore;
       if (inScore > 0) {
         setOldScore(user.score)
         const s : Position[] = newGameState.snake.snakeBody.toArray();
