@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const nodeUrl = process.env.NODE_URL;
-const adminPrivateKey = process.env.PRIVATE_KEY;
+const publicAddress = process.env.PUBLIC_ADDRESS;
 const contractAddress = process.env.WORLD_ADDRESS;
 const isStart = true
 const interval = 10000
@@ -16,7 +16,7 @@ const options = {
     method: 'eth_manageContractTask',
     params: [
       contractAddress,
-      adminPrivateKey.slice(2),
+      publicAddress,
       interval,
       isStart
     ],
