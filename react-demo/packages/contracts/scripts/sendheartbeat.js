@@ -13,7 +13,7 @@ const options = {
   },
   body: JSON.stringify({
     jsonrpc: '2.0',
-    method: 'eth_manageContractTask',
+    method: 'adv_manageContractTask',
     params: [
       contractAddress,
       publicAddress,
