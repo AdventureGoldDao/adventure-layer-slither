@@ -43,8 +43,7 @@ packages/
 ├── contracts/             # Smart contracts
 │   ├── deploys/          # Deployment records
 │   ├── scripts/          # Utility scripts
-│   │   ├── listen.js     # Reward distribution
-│   │   └── heartbeat.js  # Periodic updates
+│   │   └──  listen.js     # Reward distribution
 │   ├── src/              # Contract source code
 │   ├── foundry.toml      # Foundry configuration
 │   ├── mud.config.ts     # MUD configuration
@@ -87,9 +86,6 @@ pnpm deploy:local
 # Update WORLD_ADDRESS in .env with deployed contract address
 pnpm run listen
 
-# Start heartbeat service
-pnpm run heartbeat
-```
 
 4. **Set up development tools**
 ```bash
@@ -126,7 +122,6 @@ pnpm run test        # Run tests
 pnpm deploy:local    # Deploy to local network
 pnpm deploy:testnet  # Deploy to testnet
 pnpm run listen      # Start reward listener
-pnpm run heartbeat   # Start heartbeat service
 ```
 
 ### Smart Contract Architecture

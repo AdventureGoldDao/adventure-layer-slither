@@ -15,7 +15,6 @@
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
     "test": "tsc --noEmit && mud test",
     "listen": "node scripts/listen.js",
-    "heartbeat": "node scripts/sendheartbeat.js"
   },
   "dependencies": {
     "@latticexyz/cli": "2.2.8",

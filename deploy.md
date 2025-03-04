@@ -52,14 +52,7 @@ pnpm build
 # index index.html;
 ```
 
-6. **send heartbeat**
-```shell
-cd packages/contracts
-# Start or stop heartbeat (react-demo/packages/contracts/scripts/sendheartbeat.js) up isStart
-pnpm heartbeat
-```
-
-7. **start listen**
+6. **start listen**
 ```shell
 cd packages/contracts
 # Game ends and rewards tokens based on scores
