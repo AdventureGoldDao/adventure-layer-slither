@@ -14,7 +14,7 @@
     "prettier": "prettier --write 'src/**/*.sol'",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
     "test": "tsc --noEmit && mud test",
-    "listen": "node scripts/listen.js",
+    "listen": "node scripts/listen.js"
   },
   "dependencies": {
     "@latticexyz/cli": "2.2.8",
