@@ -10,7 +10,7 @@
 1. **Clone the repository**
 ```bash
 git clone [repository-url]
-cd react-deme
+cd react-demo
 ```
 
 2. **build**
@@ -23,7 +23,7 @@ pnpm i && pnpm build
 cd packages/contracts
 # up env
 cp .env.example .env
-vim eth_rpc_url.toml # set eth_rpc_url
+vim foundry.toml # set eth_rpc_url
 
 # deploy contracts
 pnpm deploy:local
